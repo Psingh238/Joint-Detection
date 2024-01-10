@@ -10,12 +10,25 @@
 using namespace std;
 
 //Helper function to return magnitude of vectors
-double getMagnitude(cv::Point vector);
+double getMagnitude(cv::Point3d vector);
 
 //Function to calculate the angle using dot products
-double elbowAngle(cv::Point forearm, cv::Point joint, cv::Point backarm);
+double elbowAngle(cv::Point3d forearm, cv::Point3d joint, cv::Point3d backarm);
+//function for getting cross product of two 3d points
+cv::Point3d cross(const cv::Point3d a, const cv::Point3d b);
 
-int main(int argc, char * argv[]) try
+cv::Mat normalize_color(cv::Mat oldHsv) {
+    vector<cv::Mat> hsvChans;
+    cv::split(oldHsv, hsvChans);
+    cv::Mat vChan = hsvChans[2];
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
+    cv::Mat normVChan;
+    clahe->apply(vChan, normVChan);
+    hsvChans[2] = normVChan;
+    cv::merge(hsvChans, oldHsv);
+    return oldHsv;
+}
+int main(int argc, char* argv[]) try
 {
     // Declare depth colorizer for pretty visualization of depth data
     //rs2::colorizer color_map;
@@ -29,11 +42,11 @@ int main(int argc, char * argv[]) try
     using namespace cv;
     const auto window_name = "Display Image";
     namedWindow(window_name, WINDOW_AUTOSIZE);
-    
+
     while (waitKey(1) < 0 && getWindowProperty(window_name, WND_PROP_AUTOSIZE) >= 0)
     {
         rs2::frameset data = pipe.wait_for_frames(); // Wait for next set of frames from the camera
-        //rs2::frame depth = data.get_depth_frame().apply_filter(color_map);
+        rs2::depth_frame depth = data.get_depth_frame();
         rs2::frame color = data.get_color_frame();
 
         // Query frame size (width and height)
@@ -49,14 +62,14 @@ int main(int argc, char * argv[]) try
         Vec3i lower_red = { 160, 20, 20 };
         Vec3i upper_red = { 179, 255, 255 };
 
-        Vec3i lower_green = {40 , 50, 50};
+        Vec3i lower_green = { 40, 50, 50 };
         Vec3i upper_green = { 80, 255, 255 };
 
-        Vec3i lower_purple = { 150, 20, 20 };
-        Vec3i upper_purple = { 159, 255, 255 };
+        Vec3i lower_purple = { 125, 50, 50 };
+        Vec3i upper_purple = { 139, 255, 255 };
 
         cvtColor(colorImage, HSVImage, COLOR_RGB2HSV);
-        
+        HSVImage = normalize_color(HSVImage);
         //We need to convert image from RGB to BGR as that is what openCV uses internally
         cvtColor(colorImage, colorImage, COLOR_RGB2BGR);
 
@@ -80,8 +93,8 @@ int main(int argc, char * argv[]) try
         findContours(mask_green, contoursGreen, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
         findContours(mask_purple, contoursPurple, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
 
-        Point centerRed, centerGreen, centerPurple;
-
+        Point3f centerRed, centerGreen, centerPurple;
+        
         // Get the largest red contour
         double max_area_red = -1;
         int largest_contour_index_red = -1;
@@ -99,8 +112,10 @@ int main(int argc, char * argv[]) try
             //drawContours(colorImage, contoursRed, largest_contour_index, Scalar(0, 0, 255), 2);
             Rect redRect = boundingRect(contoursRed.at(largest_contour_index_red));
             rectangle(colorImage, redRect, Scalar(255, 255, 255), 2);
-            centerRed = { redRect.x + redRect.width / 2, redRect.y + redRect.height /2 };
-            drawMarker(colorImage, centerRed, Scalar(0, 0, 255), MARKER_CROSS, 20, 3);
+            float redDepth = depth.get_distance(redRect.x + redRect.width / 2, redRect.y + redRect.height / 2);
+            centerRed = { static_cast<float>(redRect.x + redRect.width / 2), static_cast<float>(redRect.y + redRect.height / 2), redDepth};
+            
+            drawMarker(colorImage, Point(centerRed.x, centerRed.y), Scalar(0, 0, 255), MARKER_CROSS, 20, 3);
         }
 
         // Get the largest green contour
@@ -119,8 +134,10 @@ int main(int argc, char * argv[]) try
             //drawContours(colorImage, contoursRed, largest_contour_index, Scalar(0, 0, 255), 2);
             Rect greenRect = boundingRect(contoursGreen.at(largest_contour_index_green));
             rectangle(colorImage, greenRect, Scalar(255, 255, 255), 2);
-            centerGreen = { greenRect.x + greenRect.width / 2, greenRect.y + greenRect.height / 2 };
-            drawMarker(colorImage, centerGreen, Scalar(0, 255, 0), MARKER_CROSS, 20, 3);
+            float greenDepth = depth.get_distance(greenRect.x + greenRect.width / 2, greenRect.y + greenRect.height / 2);
+            centerGreen = { static_cast<float>(greenRect.x + greenRect.width / 2), static_cast<float>(greenRect.y + greenRect.height / 2), greenDepth};
+            
+            drawMarker(colorImage, Point(centerGreen.x, centerGreen.y), Scalar(0, 255, 0), MARKER_CROSS, 20, 3);
         }
 
         // Get the largest purple contour
@@ -139,8 +156,10 @@ int main(int argc, char * argv[]) try
             //drawContours(colorImage, contoursRed, largest_contour_index, Scalar(0, 0, 255), 2);
             Rect purpleRect = boundingRect(contoursPurple.at(largest_contour_index_purple));
             rectangle(colorImage, purpleRect, Scalar(255, 255, 255), 2);
-            centerPurple = { purpleRect.x + purpleRect.width / 2, purpleRect.y + purpleRect.height / 2 };
-            drawMarker(colorImage, centerPurple, Scalar(255, 0, 255), MARKER_CROSS, 20, 3);
+            float purpleDepth = depth.get_distance(purpleRect.x + purpleRect.width / 2, purpleRect.y + purpleRect.height / 2);
+            centerPurple = { static_cast<float>(purpleRect.x + purpleRect.width / 2), static_cast<float>(purpleRect.y + purpleRect.height / 2), purpleDepth };
+            
+            drawMarker(colorImage, Point(centerPurple.x, centerPurple.y), Scalar(255, 0, 255), MARKER_CROSS, 20, 3);
         }
 
         //Contour detection code
@@ -167,19 +186,98 @@ int main(int argc, char * argv[]) try
 
         int rows = HSVImage.rows;
         int cols = HSVImage.cols;
-        
+
         Vec3b hsvValue = HSVImage.at<Vec3b>(rows / 2, cols / 2);
 
         drawMarker(HSVImage, Point(cols / 2, rows / 2), Scalar(255, 255, 255));
 
-        int angle = elbowAngle(centerRed, centerPurple, centerGreen);
+        int angle = elbowAngle(Point3d(centerRed.x, centerRed.y, centerRed.z), Point3d(centerPurple.x, centerPurple.y, centerPurple.z), Point3d(centerGreen.x, centerGreen.y, centerGreen.z));
 
         // Update the window with new data
         imshow(window_name, colorImage);
         imshow("HSV Image", HSVImage);
-        //cout << "HSV values: " << (int)hsvValue.val[0] << ", " << (int)hsvValue.val[1] << ", " << (int)hsvValue.val[2] << "\r";
-        cout << "Elbow Angle: " << angle << '\r';
+        cout << "HSV values: " << (int)hsvValue.val[0] << ", " << (int)hsvValue.val[1] << ", " << (int)hsvValue.val[2] << "\r";
+        cout << "Elbow Angle: " << angle << '\r'<<endl;
         //imshow("Contour", drawing);
+    }
+
+    return EXIT_SUCCESS;
+}
+catch (const rs2::error& e)
+{
+    std::cerr << "RealSense error calling " << e.get_failed_function() << "(" << e.get_failed_args() << "):\n    " << e.what() << std::endl;
+    return EXIT_FAILURE;
+}
+catch (const std::exception& e)
+{
+    std::cerr << e.what() << std::endl;
+    return EXIT_FAILURE;
+}
+
+double elbowAngle(cv::Point3d forearm, cv::Point3d joint, cv::Point3d backarm)
+{
+    if (forearm.x != 0 && forearm.y != 0 && forearm.z != 0 && joint.x != 0 && joint.y != 0 && joint.z != 0 && backarm.x != 0 && backarm.y != 0 && backarm.z != 0)
+    {
+        cv::Point3d forearmJoint = { forearm.x - joint.x, forearm.y - joint.y, forearm.z - joint.z };
+        cv::Point3d backarmJoint = { backarm.x - joint.x, backarm.y - joint.y, backarm.z - joint.z };
+        
+        double magForearm = getMagnitude(forearmJoint), magBackarm = getMagnitude(backarmJoint);
+        forearmJoint /= magForearm;
+        backarmJoint /= magBackarm;
+        double theta = acos(forearmJoint.ddot(backarmJoint));
+        
+        //double theta = atan2(cross(forearmJoint, backarmJoint).ddot(joint), forearmJoint.ddot(backarmJoint));
+
+        return (theta * 180.0) / CV_PI;
+    }
+
+    //Return default value when not all points are detected
+    return -1;
+
+}
+cv::Point3d cross(const cv::Point3d a, const cv::Point3d b) {
+    double x = a.y * b.z - a.z * b.y;
+    double y = a.z * b.x - a.x * b.z;
+    double z = a.x * b.y - a.y * b.x;
+    return cv::Point3d(x, y, z);
+}
+double getMagnitude(cv::Point3d vector)
+{
+    double x = vector.x, y = vector.y, z = vector.z;
+
+    return sqrt(pow(x, 2) + pow(y, 2)+ pow(z, 2));
+
+}
+
+/*
+int main(int argc, char * argv[]) try
+{
+    // Declare depth colorizer for pretty visualization of depth data
+    rs2::colorizer color_map;
+
+    // Declare RealSense pipeline, encapsulating the actual device and sensors
+    rs2::pipeline pipe;
+    // Start streaming with default recommended configuration
+    pipe.start();
+
+    using namespace cv;
+    const auto window_name = "Display Image";
+    namedWindow(window_name, WINDOW_AUTOSIZE);
+
+    while (waitKey(1) < 0 && getWindowProperty(window_name, WND_PROP_AUTOSIZE) >= 0)
+    {
+        rs2::frameset data = pipe.wait_for_frames(); // Wait for next set of frames from the camera
+        rs2::frame depth = data.get_depth_frame().apply_filter(color_map);
+
+        // Query frame size (width and height)
+        const int w = depth.as<rs2::video_frame>().get_width();
+        const int h = depth.as<rs2::video_frame>().get_height();
+
+        // Create OpenCV matrix of size (w,h) from the colorized depth data
+        Mat image(Size(w, h), CV_8UC3, (void*)depth.get_data(), Mat::AUTO_STEP);
+
+        // Update the window with new data
+        imshow(window_name, image);
     }
 
     return EXIT_SUCCESS;
@@ -194,38 +292,7 @@ catch (const std::exception& e)
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
 }
-
-double elbowAngle(cv::Point forearm, cv::Point joint, cv::Point backarm)
-{
-    if (forearm.x != 0 && forearm.y != 0 && joint.x != 0 && joint.y != 0 && backarm.x != 0 && backarm.y != 0)
-    {
-        cv::Point forearmJoint = { forearm.x - joint.x, forearm.y - joint.y };
-        cv::Point backarmJoint = { backarm.x - joint.x, backarm.y - joint.y };
-
-        double magForearm = getMagnitude(forearmJoint), magBackarm = getMagnitude(backarmJoint);
-
-        double theta = acos(forearmJoint.ddot(backarmJoint) / (magForearm * magBackarm));
-
-        if (theta < 0)
-        {
-            theta += 2 * CV_PI;
-        }
-
-        return theta * 180.0 / CV_PI;
-    }
-
-    //Return default value when not all points are detected
-    return -1;
-
-}
-
-double getMagnitude(cv::Point vector)
-{
-    double x = vector.x, y = vector.y;
-
-    return sqrt(pow(x, 2) + pow(y, 2));
-
-}
+*/
 
 
 
