@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) try
         Vec3i upper_purple = { 139, 255, 255 };
 
         cvtColor(colorImage, HSVImage, COLOR_RGB2HSV);
-        HSVImage = normalize_color(HSVImage);
+        //HSVImage = normalize_color(HSVImage);
         //We need to convert image from RGB to BGR as that is what openCV uses internally
         cvtColor(colorImage, colorImage, COLOR_RGB2BGR);
 
