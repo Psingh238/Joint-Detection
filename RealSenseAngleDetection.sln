@@ -5,7 +5,7 @@ VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RealSenseAngleDetection", "RealSenseAngleDetection.vcxproj", "{464EF319-EBA0-4FDC-95ED-E1BAA89E568C}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "IntelRealSenseAngleDetection", "..\IntelRealSenseAngleDetection\IntelRealSenseAngleDetection.pyproj", "{78912C9D-6DC9-45F0-80BB-34CB6E9D531A}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "RealSensePython", "RealSensePython\RealSensePython.pyproj", "{5B502155-A68D-453F-81FB-40E6F2770E0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,12 +27,12 @@ Global
 		{464EF319-EBA0-4FDC-95ED-E1BAA89E568C}.Release|x64.ActiveCfg = Release|x64
 		{464EF319-EBA0-4FDC-95ED-E1BAA89E568C}.Release|x64.Build.0 = Release|x64
 		{464EF319-EBA0-4FDC-95ED-E1BAA89E568C}.Release|x86.ActiveCfg = Release|x64
-		{78912C9D-6DC9-45F0-80BB-34CB6E9D531A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78912C9D-6DC9-45F0-80BB-34CB6E9D531A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{78912C9D-6DC9-45F0-80BB-34CB6E9D531A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{78912C9D-6DC9-45F0-80BB-34CB6E9D531A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78912C9D-6DC9-45F0-80BB-34CB6E9D531A}.Release|x64.ActiveCfg = Release|Any CPU
-		{78912C9D-6DC9-45F0-80BB-34CB6E9D531A}.Release|x86.ActiveCfg = Release|Any CPU
+		{5B502155-A68D-453F-81FB-40E6F2770E0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B502155-A68D-453F-81FB-40E6F2770E0E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5B502155-A68D-453F-81FB-40E6F2770E0E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5B502155-A68D-453F-81FB-40E6F2770E0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B502155-A68D-453F-81FB-40E6F2770E0E}.Release|x64.ActiveCfg = Release|Any CPU
+		{5B502155-A68D-453F-81FB-40E6F2770E0E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
