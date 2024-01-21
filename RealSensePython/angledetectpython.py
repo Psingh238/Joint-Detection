@@ -9,6 +9,9 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import math
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
 
 # Function definitions
 
@@ -73,6 +76,13 @@ def normalize_color(oldHSV):
 # Configure depth and color streams
 pipeline = rs.pipeline()
 config = rs.config()
+
+# Configure MediaPipe settings
+BaseOptions = python.BaseOptions(model_asset_path='pose_landmarker_full.task')
+PoseLandmarker = vision.PoseLandmarker
+PoseLandmarkerOptions = vision.PoseLandmarkerOptions
+PoseLandmarkerResult = vision.PoseLandmarkerResult
+VisionRunningMode = vision.RunningMode
 
 # Get device product line for setting a supporting resolution
 pipeline_wrapper = rs.pipeline_wrapper(pipeline)
