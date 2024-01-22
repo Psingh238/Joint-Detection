@@ -5,6 +5,7 @@
 ##      Open CV and Numpy integration        ##
 ###############################################
 
+import time
 import pyrealsense2 as rs
 import numpy as np
 import cv2
@@ -90,11 +91,10 @@ VisionRunningMode = vision.RunningMode
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     print('pose landmarker result: {}'.format(result))
     
+    
 options = PoseLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=model_path),
-    running_mode=VisionRunningMode.LIVE_STREAM,
-    result_callback=print_result)
-
+    running_mode=VisionRunningMode.LIVE_STREAM, result_callback=print_result)
 
 # Get device product line for setting a supporting resolution
 pipeline_wrapper = rs.pipeline_wrapper(pipeline)
@@ -115,66 +115,78 @@ pipeline.start(config)
 try:
     while True:
 
-        # Wait for a coherent pair of frames: depth and color
-        frames = pipeline.wait_for_frames()
-        depth_frame = frames.get_depth_frame()
-        color_frame = frames.get_color_frame()
-        if not depth_frame or not color_frame:
-            continue
+        with PoseLandmarker.create_from_options(options) as landmarker:
+            
+            # Wait for a coherent pair of frames: depth and color
+            frames = pipeline.wait_for_frames()
+            depth_frame = frames.get_depth_frame()
+            color_frame = frames.get_color_frame()
+            if not depth_frame or not color_frame:
+                continue
 
-        # Convert images to numpy arrays
-        depth_image = np.asanyarray(depth_frame.get_data())
-        color_image = np.asanyarray(color_frame.get_data())
+            # Convert images to numpy arrays
+            depth_image = np.asanyarray(depth_frame.get_data())
+            color_image = np.asanyarray(color_frame.get_data())
+            
+            # Convert image to MediaPipe image for use with pose landmarker
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=color_image)
+            
+            timestamp = int(time.time())
+            
+            # Perform landmarking
+            landmarker.detect_async(mp_image, timestamp)
 
-        # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
-        depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+            # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
+            depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
-        depth_colormap_dim = depth_colormap.shape
-        color_colormap_dim = color_image.shape
-        
-        lower_red = np.array([160, 20, 20])
-        upper_red = np.array([179, 255,255])
+            depth_colormap_dim = depth_colormap.shape
+            color_colormap_dim = color_image.shape
+            
+            # define lower and upper bounds for each color
+            lower_red = np.array([160, 20, 20])
+            upper_red = np.array([179, 255,255])
 
-        lower_green = np.array([40,50,50])
-        upper_green = np.array([80, 255, 255])
+            lower_green = np.array([40,50,50])
+            upper_green = np.array([80, 255, 255])
         
-        lower_purple = np.array([115, 50, 50])
-        upper_purple = np.array([139, 255, 255])
+            lower_purple = np.array([115, 50, 50])
+            upper_purple = np.array([139, 255, 255])
         
-        HSVImage = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
-        HSVImage = normalize_color(HSVImage)
+            HSVImage = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
+            HSVImage = normalize_color(HSVImage)
         
-        #color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
+            #color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
         
-        mask_red = cv2.inRange(HSVImage, lower_red, upper_red)
-        mask_green = cv2.inRange(HSVImage, lower_green, upper_green)
-        mask_purple = cv2.inRange(HSVImage, lower_purple, upper_purple)
+            mask_red = cv2.inRange(HSVImage, lower_red, upper_red)
+            mask_green = cv2.inRange(HSVImage, lower_green, upper_green)
+            mask_purple = cv2.inRange(HSVImage, lower_purple, upper_purple)
         
-        mask_red = cv2.medianBlur(mask_red, 3)
-        mask_green = cv2.medianBlur(mask_green, 3)
-        mask_purple = cv2.medianBlur(mask_purple, 3)
+            mask_red = cv2.medianBlur(mask_red, 3)
+            mask_green = cv2.medianBlur(mask_green, 3)
+            mask_purple = cv2.medianBlur(mask_purple, 3)
         
-        contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        contours_purple, _ = cv2.findContours(mask_purple, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_purple, _ = cv2.findContours(mask_purple, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
-        center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
-        center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
-        center_purple = draw_bound_box((255, 0, 255), contours_purple, color_image, depth_frame)
+            center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
+            center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
+            center_purple = draw_bound_box((255, 0, 255), contours_purple, color_image, depth_frame)
         
-        angle = elbow_angle(center_red, center_purple, center_green)
+            angle = elbow_angle(center_red, center_purple, center_green)
         
-        # If depth and color resolutions are different, resize color image to match depth image for display
-        if depth_colormap_dim != color_colormap_dim:
-            resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]), interpolation=cv2.INTER_AREA)
-            images = np.hstack((resized_color_image, depth_colormap))
-        else:
-            images = np.hstack((color_image, depth_colormap))
+            # If depth and color resolutions are different, resize color image to match depth image for display
+            if depth_colormap_dim != color_colormap_dim:
+                resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]), interpolation=cv2.INTER_AREA)
+                images = np.hstack((resized_color_image, depth_colormap))
+            else:
+                images = np.hstack((color_image, depth_colormap))
 
-        # Show images
-        cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-        cv2.imshow('RealSense', images)
-        print(f"Elbow Angle: {angle}")
+            # Show images
+            cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
+            cv2.imshow('RealSense', images)
+            #print(f"Elbow Angle: {angle}")
+        
         cv2.waitKey(50)
 
 finally:
