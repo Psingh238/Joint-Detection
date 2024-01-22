@@ -77,12 +77,24 @@ def normalize_color(oldHSV):
 pipeline = rs.pipeline()
 config = rs.config()
 
+model_path = 'pose_landmarker_full.task'
+
 # Configure MediaPipe settings
-BaseOptions = python.BaseOptions(model_asset_path='pose_landmarker_full.task')
+BaseOptions = python.BaseOptions
 PoseLandmarker = vision.PoseLandmarker
 PoseLandmarkerOptions = vision.PoseLandmarkerOptions
 PoseLandmarkerResult = vision.PoseLandmarkerResult
 VisionRunningMode = vision.RunningMode
+
+# Callback function
+def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+    print('pose landmarker result: {}'.format(result))
+    
+options = PoseLandmarkerOptions(
+    base_options=BaseOptions(model_asset_path=model_path),
+    running_mode=VisionRunningMode.LIVE_STREAM,
+    result_callback=print_result)
+
 
 # Get device product line for setting a supporting resolution
 pipeline_wrapper = rs.pipeline_wrapper(pipeline)

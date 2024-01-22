@@ -12,6 +12,9 @@
     <Name>RealSensePython</Name>
     <RootNamespace>RealSensePython</RootNamespace>
     <InterpreterId>MSBuild|venv|$(MSBuildProjectFullPath)</InterpreterId>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterPath>C:\Users\rajas\source\repos\RealSenseAngleDetection\RealSensePython\venv\scripts\python.exe</InterpreterPath>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
