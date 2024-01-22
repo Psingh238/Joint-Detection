@@ -89,7 +89,7 @@ VisionRunningMode = vision.RunningMode
 
 # Callback function
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
-    print('pose landmarker result: {}'.format(result))
+    print('pose landmarker result: {}'.format(result.pose_landmarks[0]))
     
     
 options = PoseLandmarkerOptions(
@@ -113,6 +113,7 @@ else:
 pipeline.start(config)
 
 try:
+    # start_time = time.time()
     while True:
 
         with PoseLandmarker.create_from_options(options) as landmarker:
