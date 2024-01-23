@@ -87,7 +87,7 @@ PoseLandmarkerOptions = vision.PoseLandmarkerOptions
 PoseLandmarkerResult = vision.PoseLandmarkerResult
 VisionRunningMode = vision.RunningMode
 
-file = open('PoseLandmars.txt', '+a')
+file = open('PoseLandmarks.txt', '+a')
 
 # Callback function
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
