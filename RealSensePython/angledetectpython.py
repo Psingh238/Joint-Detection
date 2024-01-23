@@ -87,9 +87,12 @@ PoseLandmarkerOptions = vision.PoseLandmarkerOptions
 PoseLandmarkerResult = vision.PoseLandmarkerResult
 VisionRunningMode = vision.RunningMode
 
+file = open('PoseLandmars.txt', '+a')
+
 # Callback function
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
-    print('pose landmarker result: {}'.format(result.pose_landmarks[0]))
+    file.write(result)
+        
     
     
 options = PoseLandmarkerOptions(
@@ -115,7 +118,9 @@ pipeline.start(config)
 try:
     # start_time = time.time()
     while True:
-
+        
+        start_time = time.time()
+        
         with PoseLandmarker.create_from_options(options) as landmarker:
             
             # Wait for a coherent pair of frames: depth and color
@@ -132,7 +137,7 @@ try:
             # Convert image to MediaPipe image for use with pose landmarker
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=color_image)
             
-            timestamp = int(time.time())
+            timestamp = int(time.time() - start_time)
             
             # Perform landmarking
             landmarker.detect_async(mp_image, timestamp)
@@ -188,7 +193,7 @@ try:
             cv2.imshow('RealSense', images)
             #print(f"Elbow Angle: {angle}")
         
-        cv2.waitKey(50)
+        cv2.waitKey(1)
 
 finally:
 
