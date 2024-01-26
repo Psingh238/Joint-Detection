@@ -90,8 +90,12 @@ VisionRunningMode = vision.RunningMode
 # Callback function
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     landmarks = result.pose_landmarks
-    # Print out normalized landmarks for the nose
-    print('The result is {}'.format(landmarks[0][0]))
+    
+    # Ensure landmarks were actually returned or not
+    # This ensures list indexing is successful
+    if len(landmarks) != 0:
+        # Print out normalized landmarks for the nose
+        print('The result is {}'.format(landmarks[0][0]))
         
     
     
