@@ -91,7 +91,7 @@ VisionRunningMode = vision.RunningMode
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     landmarks = result.pose_landmarks
     # Print out normalized landmarks for the nose
-    print('The result is {}'.format(landmarks[0]))
+    print('The result is {}'.format(landmarks[0][0]))
         
     
     
@@ -116,7 +116,6 @@ else:
 pipeline.start(config)
 
 try:
-    # start_time = time.time()
     while True:
         
         start_time = time.time()
