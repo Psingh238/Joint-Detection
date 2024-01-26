@@ -89,7 +89,8 @@ VisionRunningMode = vision.RunningMode
 
 # Callback function
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
-    print('The result is {}'.format(result[0]))
+    landmarks = result.pose_landmarks
+    print('The result is {}'.format(landmarks[0]))
         
     
     
