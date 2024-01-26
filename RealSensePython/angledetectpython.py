@@ -87,11 +87,9 @@ PoseLandmarkerOptions = vision.PoseLandmarkerOptions
 PoseLandmarkerResult = vision.PoseLandmarkerResult
 VisionRunningMode = vision.RunningMode
 
-file = open('PoseLandmarks.txt', '+a')
-
 # Callback function
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
-    file.write(result)
+    print('The result is {}'.format(result[0]))
         
     
     
