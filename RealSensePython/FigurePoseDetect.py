@@ -12,7 +12,7 @@ class FigurePoseDetect:
 
         # Configure MediaPipe settings
         BaseOptions = python.BaseOptions
-        PoseLandmarker = vision.PoseLandmarker
+        self.PoseLandmarker = vision.PoseLandmarker
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
         self.PoseLandmarkerResult = vision.PoseLandmarkerResult
         VisionRunningMode = vision.RunningMode
