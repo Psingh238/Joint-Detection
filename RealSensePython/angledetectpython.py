@@ -13,6 +13,7 @@ import math
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+import FigurePoseDetect
 
 # Function definitions
 
@@ -78,15 +79,17 @@ def normalize_color(oldHSV):
 pipeline = rs.pipeline()
 config = rs.config()
 
-model_path = 'pose_landmarker_full.task'
+#model_path = 'pose_landmarker_full.task'
+fpd = FigurePoseDetect()
 
 # Configure MediaPipe settings
+'''
 BaseOptions = python.BaseOptions
 PoseLandmarker = vision.PoseLandmarker
 PoseLandmarkerOptions = vision.PoseLandmarkerOptions
 PoseLandmarkerResult = vision.PoseLandmarkerResult
 VisionRunningMode = vision.RunningMode
-
+'''
 # Callback function
 def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     landmarks = result.pose_landmarks
@@ -98,10 +101,11 @@ def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp
         print('The result is {}'.format(landmarks[0][0]))
         
     
-    
+'''    
 options = PoseLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=model_path),
     running_mode=VisionRunningMode.LIVE_STREAM, result_callback=print_result)
+'''
 
 # Get device product line for setting a supporting resolution
 pipeline_wrapper = rs.pipeline_wrapper(pipeline)
@@ -124,7 +128,7 @@ try:
         
         start_time = time.time()
         
-        with PoseLandmarker.create_from_options(options) as landmarker:
+        with fpd.PoseLandmarker.create_from_options(fpd.options) as landmarker:
             
             # Wait for a coherent pair of frames: depth and color
             frames = pipeline.wait_for_frames()
