@@ -14,14 +14,13 @@ class FigurePoseDetect:
         BaseOptions = python.BaseOptions
         self.PoseLandmarker = vision.PoseLandmarker
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
-        self.PoseLandmarkerResult = vision.PoseLandmarkerResult
+        PoseLandmarkerResult = vision.PoseLandmarkerResult
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
-            running_mode=VisionRunningMode.LIVE_STREAM, result_callback=self.print_result
-            )
+            running_mode=VisionRunningMode.LIVE_STREAM, result_callback=self.print_result)
 
-    def print_result(self, result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+    def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
         landmarks = result.pose_landmarks
     
         # Ensure landmarks were actually returned or not

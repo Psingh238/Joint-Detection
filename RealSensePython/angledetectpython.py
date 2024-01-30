@@ -91,7 +91,7 @@ PoseLandmarkerResult = vision.PoseLandmarkerResult
 VisionRunningMode = vision.RunningMode
 '''
 # Callback function
-def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+def print_result(result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     landmarks = result.pose_landmarks
     
     # Ensure landmarks were actually returned or not
