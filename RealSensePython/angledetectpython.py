@@ -80,7 +80,7 @@ pipeline = rs.pipeline()
 config = rs.config()
 
 #model_path = 'pose_landmarker_full.task'
-fpd = FigurePoseDetect()
+fpd = FigurePoseDetect.FigurePoseDetect()
 
 # Configure MediaPipe settings
 '''
