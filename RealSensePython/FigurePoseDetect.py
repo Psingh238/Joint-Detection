@@ -31,7 +31,9 @@ class FigurePoseDetect:
         
         # loop through all 33 keypoints and annotate the image
         pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-        pose_landmarks_proto.landmark.extend([landmark_pb2.NormalizedLandMark(x = landmark.x, y = landmark.y, z = landmark.z) for landmark in landmarks])
+        
+        for landmark in landmarks:
+            pose_landmarks_proto.landmark.extend(landmark_pb2.NormalizedLandMark(x = landmark.x, y = landmark.y, z = landmark.z))
         
         # draw landmarks on the image copy
         solutions.drawing_utils.draw_landmarks(annotated_image,
