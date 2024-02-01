@@ -1,10 +1,13 @@
 import time
+from typing import Annotated
 import numpy as np
 import cv2
 import math
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+from mediapipe import solutions
+from mediapipe.framework.formats import landmark_pb2
 
 class FigurePoseDetect:
     def __init__(self):
@@ -14,12 +17,29 @@ class FigurePoseDetect:
         BaseOptions = python.BaseOptions
         self.PoseLandmarker = vision.PoseLandmarker
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
-        self.PoseLandmarkerResult = vision.PoseLandmarkerResult
+        PoseLandmarkerResult = vision.PoseLandmarkerResult
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
-            running_mode=VisionRunningMode.LIVE_STREAM, result_callback=self.print_result
-            )
+            running_mode=VisionRunningMode.LIVE_STREAM, result_callback=self.print_result)
+
+    # function to return annotated image with pose landmarks on the figure given the result
+    # pre: result is valid as it is not empty
+    def draw_landmarks(self, result: vision.PoseLandmarkerResult, image: mp.Image) -> np.ndarray:
+        landmarks = result.pose_landmarks[0]
+        annotated_image = np.copy(image.numpy_view())
+        
+        # loop through all 33 keypoints and annotate the image
+        pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+        pose_landmarks_proto.landmark.extend([landmark_pb2.NormalizedLandMark(x = landmark.x, y = landmark.y, z = landmark.z) for landmark in landmarks])
+        
+        # draw landmarks on the image copy
+        solutions.drawing_utils.draw_landmarks(annotated_image,
+          pose_landmarks_proto,
+          solutions.pose.POSE_CONNECTIONS,
+          solutions.drawing_styles.get_default_pose_landmarks_style())
+        
+        return annotated_image
 
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
         landmarks = result.pose_landmarks
@@ -27,8 +47,14 @@ class FigurePoseDetect:
         # Ensure landmarks were actually returned or not
         # This ensures list indexing is successful
         if len(landmarks) != 0:
+            
+            # draw the pose and display it
+            annotated_image = self.draw_landmarks(result, output_image)
+            
+            cv2.imshow('Pose overlay', annotated_image)
+            
             # Print out normalized landmarks for the nose
-            print('The result is {}'.format(landmarks[0][0]))
+            #print('The result is {}'.format(landmarks[0][0]))
 
 
 
