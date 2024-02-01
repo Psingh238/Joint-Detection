@@ -30,10 +30,7 @@ class FigurePoseDetect:
         annotated_image = np.copy(image.numpy_view())
         if len(landmarks):
             # loop through all 33 keypoints and annotate the image
-            pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-        
-            for landmark in landmarks[0]:
-                pose_landmarks_proto.landmark.extend(landmark_pb2.NormalizedLandMark(x = landmark.x, y = landmark.y, z = landmark.z))
+            pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList(landmarks[0])
         
             # draw landmarks on the image copy
             solutions.drawing_utils.draw_landmarks(annotated_image, pose_landmarks_proto, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
