@@ -80,7 +80,7 @@ pipeline = rs.pipeline()
 config = rs.config()
 
 #model_path = 'pose_landmarker_full.task'
-fpd = FigurePoseDetect()
+fpd = FigurePoseDetect.FigurePoseDetect()
 
 # Configure MediaPipe settings
 '''
@@ -91,7 +91,7 @@ PoseLandmarkerResult = vision.PoseLandmarkerResult
 VisionRunningMode = vision.RunningMode
 '''
 # Callback function
-def print_result(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+def print_result(result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     landmarks = result.pose_landmarks
     
     # Ensure landmarks were actually returned or not
