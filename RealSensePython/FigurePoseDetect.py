@@ -30,7 +30,7 @@ class FigurePoseDetect:
         annotated_image = np.copy(image.numpy_view())
         
         # draw landmarks on the image copy
-        solutions.drawing_utils.draw_landmarks(annotated_image, landmarks[0], solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
+        solutions.drawing_utils.draw_landmarks(annotated_image, landmarks, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
         
         return annotated_image
 
