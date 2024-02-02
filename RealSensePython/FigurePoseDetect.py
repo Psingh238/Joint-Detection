@@ -25,9 +25,9 @@ class FigurePoseDetect:
 
     # function to return annotated image with pose landmarks on the figure given the result
     # pre: result is valid as it is not empty
-    def draw_landmarks(self, image: mp.Image) -> np.ndarray:
+    def draw_landmarks(self,result:vision.PoseLandmarkerResult, image: mp.Image) -> np.ndarray:
         
-        landmark_list = self.PoseLandmarkerResult.pose_landmarks
+        landmark_list = result.pose_landmarks
         annotated_image = np.copy(image.numpy_view())
         
         if len(landmark_list):
@@ -38,22 +38,22 @@ class FigurePoseDetect:
                 print(type(landmarks[0].x))
                 for idy in range(len(landmarks)):
                 
-                    pose_landmarks_proto.landmark.append(landmark_pb2.NormalizedLandMark(x = landmarks[idy].x, y = landmarks[idy].y, z = landmarks[idy].z))
+                    pose_landmarks_proto.landmark.append(landmark_pb2.NormalizedLandmark(x = landmarks[idy].x, y = landmarks[idy].y, z = landmarks[idy].z))
         
                 # draw landmarks on the image copy
                 solutions.drawing_utils.draw_landmarks(annotated_image, pose_landmarks_proto, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
         
         return annotated_image
 
-    def print_result(self, output_image: mp.Image, timestamp_ms: int):
-        landmarks = self.PoseLandmarkerResult.pose_landmarks
+    def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+        landmarks = result.pose_landmarks
     
         # Ensure landmarks were actually returned or not
         # This ensures list indexing is successful
         if len(landmarks) != 0:
             
             # draw the pose and display it
-            annotated_image = self.draw_landmarks(output_image)
+            annotated_image = self.draw_landmarks(result, output_image)
             
             cv2.imshow('Pose overlay', annotated_image)
             
