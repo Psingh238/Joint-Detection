@@ -26,22 +26,23 @@ class FigurePoseDetect:
     # function to return annotated image with pose landmarks on the figure given the result
     # pre: result is valid as it is not empty
     def draw_landmarks(self, result: vision.PoseLandmarkerResult, image: mp.Image) -> np.ndarray:
-        landmarks_list = result.pose_landmarks
+        
+        landmark_list = result.pose_landmarks
         annotated_image = np.copy(image.numpy_view())
         
-        for idx in range(len(landmarks_list)):
-            landmarks = landmarks_list[idx]
-            landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-            
-            landmarks_proto.landmark.extend([
-                landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in landmarks
-            ])
-            # draw landmarks on the image copy
-            solutions.drawing_utils.draw_landmarks(
-                annotated_image,
-                landmarks_proto,
-                solutions.pose.POSE_CONNECTIONS,
-                solutions.drawing_styles.get_default_pose_landmarks_style())
+        if len(landmark_list):
+            for idx in range(len(landmark_list)):
+                # loop through all 33 keypoints and annotate the image
+                landmarks = landmark_list[idx]
+                pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+                print(type(landmarks[0].x))
+                for idy in range(len(landmarks)):
+                
+                    pose_landmarks_proto.landmark.append(landmark_pb2.NormalizedLandMark(x = landmarks[idy].x, y = landmarks[idy].y, z = landmarks[idy].z))
+        
+                # draw landmarks on the image copy
+                solutions.drawing_utils.draw_landmarks(annotated_image, pose_landmarks_proto, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
+        
         return annotated_image
 
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
