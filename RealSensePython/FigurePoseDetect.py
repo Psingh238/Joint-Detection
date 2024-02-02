@@ -17,7 +17,7 @@ class FigurePoseDetect:
         BaseOptions = python.BaseOptions
         self.PoseLandmarker = vision.PoseLandmarker
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
-        PoseLandmarkerResult = vision.PoseLandmarkerResult
+        self.PoseLandmarkerResult = vision.PoseLandmarkerResult
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
@@ -25,9 +25,9 @@ class FigurePoseDetect:
 
     # function to return annotated image with pose landmarks on the figure given the result
     # pre: result is valid as it is not empty
-    def draw_landmarks(self, result: vision.PoseLandmarkerResult, image: mp.Image) -> np.ndarray:
+    def draw_landmarks(self, image: mp.Image) -> np.ndarray:
         
-        landmark_list = result.pose_landmarks
+        landmark_list = self.PoseLandmarkerResult.pose_landmarks
         annotated_image = np.copy(image.numpy_view())
         
         if len(landmark_list):
@@ -45,15 +45,15 @@ class FigurePoseDetect:
         
         return annotated_image
 
-    def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
-        landmarks = result.pose_landmarks
+    def print_result(self, output_image: mp.Image, timestamp_ms: int):
+        landmarks = self.PoseLandmarkerResult.pose_landmarks
     
         # Ensure landmarks were actually returned or not
         # This ensures list indexing is successful
         if len(landmarks) != 0:
             
             # draw the pose and display it
-            annotated_image = self.draw_landmarks(result, output_image)
+            annotated_image = self.draw_landmarks(output_image)
             
             cv2.imshow('Pose overlay', annotated_image)
             
