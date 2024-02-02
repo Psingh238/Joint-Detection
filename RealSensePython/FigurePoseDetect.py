@@ -26,12 +26,22 @@ class FigurePoseDetect:
     # function to return annotated image with pose landmarks on the figure given the result
     # pre: result is valid as it is not empty
     def draw_landmarks(self, result: vision.PoseLandmarkerResult, image: mp.Image) -> np.ndarray:
-        landmarks = result.pose_landmarks
+        landmarks_list = result.pose_landmarks
         annotated_image = np.copy(image.numpy_view())
         
-        # draw landmarks on the image copy
-        solutions.drawing_utils.draw_landmarks(annotated_image, landmarks, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
-        
+        for idx in range(len(landmarks_list)):
+            landmarks = landmarks_list[idx]
+            landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+            
+            landmarks_proto.landmark.extend([
+                landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in landmarks
+            ])
+            # draw landmarks on the image copy
+            solutions.drawing_utils.draw_landmarks(
+                annotated_image,
+                landmarks_proto,
+                solutions.pose.POSE_CONNECTIONS,
+                solutions.drawing_styles.get_default_pose_landmarks_style())
         return annotated_image
 
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
