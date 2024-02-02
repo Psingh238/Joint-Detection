@@ -38,7 +38,7 @@ class FigurePoseDetect:
                 print(type(landmarks[0].x))
                 for idy in range(len(landmarks)):
                 
-                    pose_landmarks_proto.landmark.append(landmark_pb2.NormalizedLandmark(x = landmarks[idy].x, y = landmarks[idy].y, z = landmarks[idy].z))
+                    pose_landmarks_proto.landmark.append(landmark_pb2.NormalizedLandMark(x = landmarks[idy].x, y = landmarks[idy].y, z = landmarks[idy].z))
         
                 # draw landmarks on the image copy
                 solutions.drawing_utils.draw_landmarks(annotated_image, pose_landmarks_proto, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
