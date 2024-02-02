@@ -18,6 +18,7 @@ class FigurePoseDetect:
         self.PoseLandmarker = vision.PoseLandmarker
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
         self.PoseLandmarkerResult = vision.PoseLandmarkerResult
+        self.annotated_image = []
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
@@ -47,15 +48,15 @@ class FigurePoseDetect:
 
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
         landmarks = result.pose_landmarks
-    
+        annotated_image = None
         # Ensure landmarks were actually returned or not
         # This ensures list indexing is successful
         if len(landmarks) != 0:
             
             # draw the pose and display it
-            annotated_image = self.draw_landmarks(result, output_image)
-            
-            cv2.imshow('Pose overlay', annotated_image)
+            self.annotated_image = self.draw_landmarks(result, output_image)
+            print(type(annotated_image))
+            #cv2.imshow('Pose overlay', annotated_image)
             
             # Print out normalized landmarks for the nose
             #print('The result is {}'.format(landmarks[0][0]))

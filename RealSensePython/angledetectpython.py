@@ -188,13 +188,16 @@ try:
         
             angle = elbow_angle(center_red, center_purple, center_green)
         
-            # If depth and color resolutions are different, resize color image to match depth image for display
+            # If depth and color resolutions are different, resize color image to match depth image for display 
+            
             if depth_colormap_dim != color_colormap_dim:
                 resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]), interpolation=cv2.INTER_AREA)
                 images = np.hstack((resized_color_image, depth_colormap))
+            
             else:
                 images = np.hstack((color_image, depth_colormap))
-
+            if len(fpd.annotated_image) != 0:
+                images = fpd.annotated_image
             # Show images
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', images)
