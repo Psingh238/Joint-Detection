@@ -54,6 +54,7 @@ class FigurePoseDetect:
             
             # draw the pose and display it
             self.annotated_image = self.draw_landmarks(result, output_image)
+            print(type(annotated_image))
             #cv2.imshow('Pose overlay', annotated_image)
             
             # Print out normalized landmarks for the nose
