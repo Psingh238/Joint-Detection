@@ -47,7 +47,7 @@ class FigurePoseDetect:
 
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
         landmarks = result.pose_landmarks
-        annotated_image = None
+    
         # Ensure landmarks were actually returned or not
         # This ensures list indexing is successful
         if len(landmarks) != 0:
