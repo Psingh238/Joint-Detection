@@ -36,9 +36,8 @@ class FigurePoseDetect:
                 # loop through all 33 keypoints and annotate the image
                 landmarks = landmark_list[idx]
                 pose_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
-                print(type(landmarks[0].x))
-                for idy in range(len(landmarks)):
                 
+                for idy in range(len(landmarks)):
                     pose_landmarks_proto.landmark.append(landmark_pb2.NormalizedLandmark(x = landmarks[idy].x, y = landmarks[idy].y, z = landmarks[idy].z))
         
                 # draw landmarks on the image copy
