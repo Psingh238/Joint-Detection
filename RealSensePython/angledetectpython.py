@@ -43,9 +43,7 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
 def elbow_angle(forearm, joint, backarm):
     
     if(forearm != None and joint!=None and backarm!=None):
-        print(forearm[2])
-        print(joint[2])
-        print(backarm[2])
+        
         forearm_joint = np.array([forearm[0]-joint[0], forearm[1]-joint[1], forearm[2]-joint[2]])
         backarm_joint = np.array([backarm[0]-joint[0], backarm[1]-joint[1], backarm[2]-joint[2]])
         
@@ -189,15 +187,16 @@ try:
             angle = elbow_angle(center_red, center_purple, center_green)
         
             # If depth and color resolutions are different, resize color image to match depth image for display 
-            
-            if depth_colormap_dim != color_colormap_dim:
-                resized_color_image = cv2.resize(color_image, dsize=(depth_colormap_dim[1], depth_colormap_dim[0]), interpolation=cv2.INTER_AREA)
-                images = np.hstack((resized_color_image, depth_colormap))
+            anno_image_dim = fpd.annotated_image.shape
+            print(len(fpd.annotated_image))
+            if len(fpd.annotated_image) != 5:
+                
+                resized_color_image = cv2.resize(color_image, dsize = (anno_image_dim[1], anno_image_dim[0]), interpolation=cv2.INTER_AREA)
+                images = np.hstack((resized_color_image, fpd.annotated_image))
             
             else:
-                images = np.hstack((color_image, depth_colormap))
-            if len(fpd.annotated_image) != 0:
-                images = fpd.annotated_image
+                images = color_image
+            
             # Show images
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', images)

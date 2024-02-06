@@ -18,7 +18,7 @@ class FigurePoseDetect:
         self.PoseLandmarker = vision.PoseLandmarker
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
         self.PoseLandmarkerResult = vision.PoseLandmarkerResult
-        self.annotated_image = []
+        self.annotated_image = np.zeros(5)
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
@@ -54,7 +54,7 @@ class FigurePoseDetect:
             
             # draw the pose and display it
             self.annotated_image = self.draw_landmarks(result, output_image)
-            print(type(annotated_image))
+            #print(type(annotated_image))
             #cv2.imshow('Pose overlay', annotated_image)
             
             # Print out normalized landmarks for the nose
