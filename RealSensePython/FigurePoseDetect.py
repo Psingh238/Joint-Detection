@@ -5,6 +5,7 @@ import cv2
 import math
 import mediapipe as mp
 import requests
+import json
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe import solutions
@@ -50,6 +51,7 @@ class FigurePoseDetect:
                     "y": landmarks[0].y,
                     "z": landmarks[0].z
                 }
+                json_data = json.dumps(pose_dict)
                 try:
                     req = requests.post(url,json=pose_dict)
                     req.raise_for_status()
