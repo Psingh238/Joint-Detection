@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import math
 import mediapipe as mp
+import requests
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe import solutions
@@ -18,7 +19,7 @@ class FigurePoseDetect:
         self.PoseLandmarker = vision.PoseLandmarker
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
         self.PoseLandmarkerResult = vision.PoseLandmarkerResult
-        self.annotated_image = np.zeros(5)
+        self.annotated_image = []
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
@@ -39,10 +40,25 @@ class FigurePoseDetect:
                 
                 for idy in range(len(landmarks)):
                     pose_landmarks_proto.landmark.append(landmark_pb2.NormalizedLandmark(x = landmarks[idy].x, y = landmarks[idy].y, z = landmarks[idy].z))
-        
+                    
                 # draw landmarks on the image copy
                 solutions.drawing_utils.draw_landmarks(annotated_image, pose_landmarks_proto, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
-        
+                url = "http://10.176.61.80:5000/"
+                pose_dict = {
+                    "marker": 0,
+                    "x": landmarks[0].x,
+                    "y": landmarks[0].y,
+                    "z": landmarks[0].z
+                }
+                try:
+                    req = requests.post(url,json=pose_dict)
+                    req.raise_for_status()
+                    #print(req.status_code)
+                    #print(req.json())
+                except requests.exceptions.RequestException as e:
+                    print("Error:", e)
+                
+                        
         return annotated_image
 
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):

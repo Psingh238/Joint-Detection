@@ -187,19 +187,15 @@ try:
             angle = elbow_angle(center_red, center_purple, center_green)
         
             # If depth and color resolutions are different, resize color image to match depth image for display 
-            anno_image_dim = fpd.annotated_image.shape
-            print(len(fpd.annotated_image))
-            if len(fpd.annotated_image) != 5:
-                
-                resized_color_image = cv2.resize(color_image, dsize = (anno_image_dim[1], anno_image_dim[0]), interpolation=cv2.INTER_AREA)
-                images = np.hstack((resized_color_image, fpd.annotated_image))
             
-            else:
-                images = color_image
+            print(len(fpd.annotated_image))
+            if len(fpd.annotated_image) != 0:
+                
+                cv2.imshow('Mediapipe', fpd.annotated_image)
             
             # Show images
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow('RealSense', images)
+            cv2.imshow('RealSense', color_image)
             #print(f"Elbow Angle: {angle}")
         
         cv2.waitKey(1)
