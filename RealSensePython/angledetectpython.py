@@ -20,7 +20,7 @@ import FigurePoseDetect
 def draw_bound_box(color, color_contour, color_image, d_frame):
     max_area_color = -1
     largest_contour_index_color = -1
-    min_area = 500.0
+    min_area = 100.0
     center_color = None
     for i in range (0, len(color_contour)):
         cnt = color_contour[i]
@@ -120,6 +120,24 @@ else:
 
 # Start streaming
 pipeline.start(config)
+# define lower and upper bounds for each color
+lower_red = np.array([160, 20, 20])
+upper_red = np.array([179, 255,255])
+
+lower_green = np.array([40,50,40])
+upper_green = np.array([80, 255, 255])
+        
+lower_pink = np.array([135, 50, 50])
+upper_pink = np.array([155, 255, 255])
+
+lower_yellow = np.array([25, 50, 50])
+upper_yellow = np.array([35, 255, 255])
+
+lower_green = np.array([36, 50, 70])
+upper_green = np.array([89, 255, 255])
+
+lower_orange = np.array([10, 50, 70])
+upper_orange = np.array([25, 255, 255])
 
 try:
     while True:
@@ -152,16 +170,6 @@ try:
 
             depth_colormap_dim = depth_colormap.shape
             color_colormap_dim = color_image.shape
-            
-            # define lower and upper bounds for each color
-            lower_red = np.array([160, 20, 20])
-            upper_red = np.array([179, 255,255])
-
-            lower_green = np.array([40,50,50])
-            upper_green = np.array([80, 255, 255])
-        
-            lower_purple = np.array([115, 50, 50])
-            upper_purple = np.array([139, 255, 255])
         
             HSVImage = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
             HSVImage = normalize_color(HSVImage)
@@ -170,28 +178,33 @@ try:
         
             mask_red = cv2.inRange(HSVImage, lower_red, upper_red)
             mask_green = cv2.inRange(HSVImage, lower_green, upper_green)
-            mask_purple = cv2.inRange(HSVImage, lower_purple, upper_purple)
+            mask_pink = cv2.inRange(HSVImage, lower_pink, upper_pink)
+            mask_orange = cv2.inRange(HSVImage, lower_orange, upper_orange)
         
             mask_red = cv2.medianBlur(mask_red, 3)
             mask_green = cv2.medianBlur(mask_green, 3)
-            mask_purple = cv2.medianBlur(mask_purple, 3)
+            mask_pink = cv2.medianBlur(mask_pink, 3)
+            mask_orange = cv2.medianBlur(mask_orange, 3)
         
             contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours_purple, _ = cv2.findContours(mask_purple, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_pink, _ = cv2.findContours(mask_pink, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_orange, _ = cv2.findContours(mask_orange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
             center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
             center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
-            center_purple = draw_bound_box((255, 0, 255), contours_purple, color_image, depth_frame)
+            center_pink = draw_bound_box((255, 0, 255), contours_pink, color_image, depth_frame)
+            center_orange = draw_bound_box((255, 255, 0), contours_pink, color_image, depth_frame)
         
-            angle = elbow_angle(center_red, center_purple, center_green)
+            angle = elbow_angle(center_green, center_pink, center_orange)
         
             # If depth and color resolutions are different, resize color image to match depth image for display 
             
             print(len(fpd.annotated_image))
             if len(fpd.annotated_image) != 0:
-                
+                dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
                 cv2.imshow('Mediapipe', fpd.annotated_image)
+                cv2.imshow('blended', dst)
             
             # Show images
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)

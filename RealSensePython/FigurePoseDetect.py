@@ -44,22 +44,24 @@ class FigurePoseDetect:
                     
                 # draw landmarks on the image copy
                 solutions.drawing_utils.draw_landmarks(annotated_image, pose_landmarks_proto, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
-                url = "http://10.176.61.80:5000/"
+                
+                url = "http://10.176.44.232:5000/"
                 pose_dict = {
                     "marker": 0,
                     "x": landmarks[0].x,
                     "y": landmarks[0].y,
                     "z": landmarks[0].z
                 }
+                '''
                 json_data = json.dumps(pose_dict)
                 try:
-                    req = requests.post(url,json=pose_dict)
+                    req = requests.post(url,json=json_data)
                     req.raise_for_status()
                     #print(req.status_code)
                     #print(req.json())
                 except requests.exceptions.RequestException as e:
                     print("Error:", e)
-                
+                '''
                         
         return annotated_image
 
