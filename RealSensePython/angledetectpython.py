@@ -200,10 +200,16 @@ try:
             angle = elbow_angle(center_green, center_pink, center_orange)
         
             # If depth and color resolutions are different, resize color image to match depth image for display 
+
+            #As of now, no set relation between mediapip and boeing joints. Will have to try and make one to make this make sense....
             mp_res = fpd.PoseLandmarkerResult
             mp_landmarks = mp_res.pose_landmarks
+            #records each key point by using i as the key
             full_dict = {}
+            #dictionary that is continuously overrided through each loop
             pos_dict = None
+            #loops 18 times to record all joints and is stored in full dict
+
             for i in range(18):        
                 match i:
                     case 0:
@@ -300,7 +306,16 @@ try:
                         #color details
                         pos_dict = None
                 full_dict[i] = pos_dict
-            
+                '''
+                json_data = json.dumps(full_dict)
+                try:
+                    req = requests.post(url,json=json_data)
+                    req.raise_for_status()
+                    #print(req.status_code)
+                    #print(req.json())
+                except requests.exceptions.RequestException as e:
+                    print("Error:", e)
+                '''
             print(len(fpd.annotated_image))
             if len(fpd.annotated_image) != 0:
                 dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
