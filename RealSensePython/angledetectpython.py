@@ -5,6 +5,7 @@
 ##      Open CV and Numpy integration        ##
 ###############################################
 
+from re import match
 import time
 import pyrealsense2 as rs
 import numpy as np
@@ -199,6 +200,106 @@ try:
             angle = elbow_angle(center_green, center_pink, center_orange)
         
             # If depth and color resolutions are different, resize color image to match depth image for display 
+            mp_res = fpd.PoseLandmarkerResult
+            mp_landmarks = mp_res.pose_landmarks
+            full_dict = {}
+            pos_dict = None
+            for i in range(18):        
+                match i:
+                    case 0:
+                        #color joint info
+                        pos_dict = None
+                    case 1:
+                        #color joint info
+                        pos_dict = None
+                    case 2:
+                        pos_dict = {
+                            "x": mp_landmarks[0].x,
+                            "y": mp_landmarks[0].y,
+                            "z": mp_landmarks[0].z
+                        }
+                    case 3:
+                        #color joint info
+                        pos_dict = None
+                    case 4:
+                        pos_dict = {
+                            "x": mp_landmarks[11].x,
+                            "y": mp_landmarks[11].y,
+                            "z": mp_landmarks[11].z
+                        }
+                    case 5:
+                        pos_dict = {
+                            "x": mp_landmarks[13].x,
+                            "y": mp_landmarks[13].y,
+                            "z": mp_landmarks[13].z
+                        }
+                    case 6:
+                        pos_dict = {
+                            "x": mp_landmarks[15].x,
+                            "y": mp_landmarks[15].y,
+                            "z": mp_landmarks[15].z
+                        }
+                    case 7:
+                        #color info
+                        pos_dict = None
+                    case 8:
+                        pos_dict = {
+                            "x": mp_landmarks[12].x,
+                            "y": mp_landmarks[12].y,
+                            "z": mp_landmarks[12].z
+                        }
+                    case 9:
+                        pos_dict = {
+                            "x": mp_landmarks[14].x,
+                            "y": mp_landmarks[14].y,
+                            "z": mp_landmarks[14].z
+                        }
+                    case 10:
+                        pos_dict = {
+                            "x": mp_landmarks[16].x,
+                            "y": mp_landmarks[16].y,
+                            "z": mp_landmarks[16].z
+                        }
+                    case 11:
+                        pos_dict = {
+                            "x": mp_landmarks[23].x,
+                            "y": mp_landmarks[23].y,
+                            "z": mp_landmarks[23].z
+                        }
+                    case 12:
+                        pos_dict = {
+                            "x": mp_landmarks[25].x,
+                            "y": mp_landmarks[25].y,
+                            "z": mp_landmarks[25].z
+                        }
+                    case 13:
+                        pos_dict = {
+                            "x": mp_landmarks[27].x,
+                            "y": mp_landmarks[27].y,
+                            "z": mp_landmarks[27].z
+                        }
+                    case 14:
+                        pos_dict = {
+                            "x": mp_landmarks[24].x,
+                            "y": mp_landmarks[24].y,
+                            "z": mp_landmarks[24].z
+                        }
+                    case 15:
+                        pos_dict = {
+                            "x": mp_landmarks[26].x,
+                            "y": mp_landmarks[26].y,
+                            "z": mp_landmarks[26].z
+                        }
+                    case 16:
+                        pos_dict = {
+                            "x": mp_landmarks[28].x,
+                            "y": mp_landmarks[28].y,
+                            "z": mp_landmarks[28].z
+                        }
+                    case 17:
+                        #color details
+                        pos_dict = None
+                full_dict[i] = pos_dict
             
             print(len(fpd.annotated_image))
             if len(fpd.annotated_image) != 0:
