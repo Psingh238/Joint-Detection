@@ -79,9 +79,9 @@ class FigurePoseDetect:
         for val in FigurePoseDetect.pose_remap:
             if val < 0:
                 pose_dict = {
-                    'x': color_landmarks[-(val+1)][0], 
-                    'y': color_landmarks[-(val+1)][1],
-                    'z': color_landmarks[-(val+1)][2]
+                    'x': color_landmarks[-(val+1)][2], 
+                    'y': -(color_landmarks[-(val+1)][0]),
+                    'z': -(color_landmarks[-(val+1)][1])
                 }
                 full_dict.append(pose_dict)
                 continue
