@@ -13,7 +13,7 @@ from mediapipe.framework.formats import landmark_pb2
 
 class FigurePoseDetect:
         
-    pose_remap = [-1, -1, 0, -1, 11, 13, 15, -1, 12, 14, 16, 23, 25, 27, 24, 26, 28, -1]
+    pose_remap = [-1, -2, 0, -3, 11, 13, 15, -4, 12, 14, 16, 23, 25, 27, 24, 26, 28, -5]
 
     def __init__(self):
         model_path = 'pose_landmarker_full.task'
@@ -71,14 +71,18 @@ class FigurePoseDetect:
     # Define function to remap MediaPipe landmarks to specified landmarks
     # Also remaps to the proper coordinate system with z up
     # Pre: pose_landmarks would be valid due to location of function call
-    def __remap_landmarks(self):
+    def __remap_landmarks(self, color_landmarks):
         full_dict = []
         pose_dict = None
         mp_landmarks = self.PoseLandmarkerResult.pose_landmarks
         
         for val in FigurePoseDetect.pose_remap:
             if val < 0:
-                pose_dict = None
+                pose_dict = {
+                    'x': color_landmarks[-(val+1)][0], 
+                    'y': color_landmarks[-(val+1)][1],
+                    'z': color_landmarks[-(val+1)][2]
+                }
                 full_dict.append(pose_dict)
                 continue
             pose_dict = {
