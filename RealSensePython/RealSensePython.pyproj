@@ -13,7 +13,8 @@
     <RootNamespace>RealSensePython</RootNamespace>
     <InterpreterId>MSBuild|venv|$(MSBuildProjectFullPath)</InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <InterpreterPath>C:\Users\gauma\source\repos\RealSenseAngleDetection\RealSensePython\venv\scripts\python.exe</InterpreterPath>
+    <InterpreterPath>
+    </InterpreterPath>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
