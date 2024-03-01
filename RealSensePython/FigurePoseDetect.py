@@ -12,6 +12,9 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 
 class FigurePoseDetect:
+        
+    pose_remap = [-1, -1, 0, -1, 11, 13, 15, -1, 12, 14, 16, 23, 25, 27, 24, 26, 28, -1]
+
     def __init__(self):
         model_path = 'pose_landmarker_full.task'
 
@@ -65,6 +68,29 @@ class FigurePoseDetect:
                         
         return annotated_image
 
+    # Define function to remap MediaPipe landmarks to specified landmarks
+    # Also remaps to the proper coordinate system with z up
+    # Pre: pose_landmarks would be valid due to location of function call
+    def __remap_landmarks(self):
+        full_dict = []
+        pose_dict = None
+        mp_landmarks = self.PoseLandmarkerResult.pose_landmarks
+        
+        for val in FigurePoseDetect.pose_remap:
+            if val < 0:
+                pose_dict = None
+                full_dict.append(pose_dict)
+                continue
+            pose_dict = {
+                'x': mp_landmarks[val].z,
+                'y': -(mp_landmarks[val].x),
+                'z': -(mp_landmarks[val].y)
+                }
+            full_dict.append(pose_dict)
+        
+        return full_dict
+
+
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
         landmarks = result.pose_landmarks
     
@@ -72,13 +98,8 @@ class FigurePoseDetect:
         # This ensures list indexing is successful
         if len(landmarks) != 0:
             
-            # draw the pose and display it
+            # draw the pose on given image and return for access outside class
             self.annotated_image = self.draw_landmarks(result, output_image)
-            #print(type(annotated_image))
-            #cv2.imshow('Pose overlay', annotated_image)
-            
-            # Print out normalized landmarks for the nose
-            #print('The result is {}'.format(landmarks[0][0]))
 
 
 

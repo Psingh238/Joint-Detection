@@ -78,33 +78,8 @@ def normalize_color(oldHSV):
 pipeline = rs.pipeline()
 config = rs.config()
 
-#model_path = 'pose_landmarker_full.task'
-fpd = FigurePoseDetect.FigurePoseDetect()
-
-# Configure MediaPipe settings
-'''
-BaseOptions = python.BaseOptions
-PoseLandmarker = vision.PoseLandmarker
-PoseLandmarkerOptions = vision.PoseLandmarkerOptions
-PoseLandmarkerResult = vision.PoseLandmarkerResult
-VisionRunningMode = vision.RunningMode
-'''
-# Callback function
-def print_result(result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
-    landmarks = result.pose_landmarks
-    
-    # Ensure landmarks were actually returned or not
-    # This ensures list indexing is successful
-    if len(landmarks) != 0:
-        # Print out normalized landmarks for the nose
-        print('The result is {}'.format(landmarks[0][0]))
-        
-    
-'''    
-options = PoseLandmarkerOptions(
-    base_options=BaseOptions(model_asset_path=model_path),
-    running_mode=VisionRunningMode.LIVE_STREAM, result_callback=print_result)
-'''
+# Create figure pose detection object to easily access common functions
+fpd = FigurePoseDetect.FigurePoseDetect()        
 
 # Get device product line for setting a supporting resolution
 pipeline_wrapper = rs.pipeline_wrapper(pipeline)
@@ -121,7 +96,10 @@ else:
 
 # Start streaming
 pipeline.start(config)
+
 # define lower and upper bounds for each color
+# These are organized as Hue, Saturation, and Value
+# Hue goes from 0 deg to 180 deg while Saturation and Value goes from 0 to 255
 lower_red = np.array([160, 20, 20])
 upper_red = np.array([179, 255,255])
 
@@ -175,8 +153,6 @@ try:
             HSVImage = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
             HSVImage = normalize_color(HSVImage)
         
-            #color_image = cv2.cvtColor(color_image, cv2.COLOR_RGB2BGR)
-        
             mask_red = cv2.inRange(HSVImage, lower_red, upper_red)
             mask_green = cv2.inRange(HSVImage, lower_green, upper_green)
             mask_pink = cv2.inRange(HSVImage, lower_pink, upper_pink)
@@ -199,123 +175,6 @@ try:
         
             angle = elbow_angle(center_green, center_pink, center_orange)
         
-            # If depth and color resolutions are different, resize color image to match depth image for display 
-
-            #As of now, no set relation between mediapip and boeing joints. Will have to try and make one to make this make sense....
-            # mp_res = fpd.PoseLandmarkerResult
-            # mp_landmarks = mp_res.pose_landmarks
-            # #records each key point by using i as the key
-            # full_dict = {}
-            # #dictionary that is continuously overrided through each loop
-            # pos_dict = None
-            # #loops 18 times to record all joints and is stored in full dict
-
-            # for i in range(18):        
-            #     match i:
-            #         case 0:
-            #             #color joint info
-            #             pos_dict = None
-            #         case 1:
-            #             #color joint info
-            #             pos_dict = None
-            #         case 2:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[0].x,
-            #                 "y": mp_landmarks[0].y,
-            #                 "z": mp_landmarks[0].z
-            #             }
-            #         case 3:
-            #             #color joint info
-            #             pos_dict = None
-            #         case 4:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[11].x,
-            #                 "y": mp_landmarks[11].y,
-            #                 "z": mp_landmarks[11].z
-            #             }
-            #         case 5:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[13].x,
-            #                 "y": mp_landmarks[13].y,
-            #                 "z": mp_landmarks[13].z
-            #             }
-            #         case 6:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[15].x,
-            #                 "y": mp_landmarks[15].y,
-            #                 "z": mp_landmarks[15].z
-            #             }
-            #         case 7:
-            #             #color info
-            #             pos_dict = None
-            #         case 8:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[12].x,
-            #                 "y": mp_landmarks[12].y,
-            #                 "z": mp_landmarks[12].z
-            #             }
-            #         case 9:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[14].x,
-            #                 "y": mp_landmarks[14].y,
-            #                 "z": mp_landmarks[14].z
-            #             }
-            #         case 10:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[16].x,
-            #                 "y": mp_landmarks[16].y,
-            #                 "z": mp_landmarks[16].z
-            #             }
-            #         case 11:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[23].x,
-            #                 "y": mp_landmarks[23].y,
-            #                 "z": mp_landmarks[23].z
-            #             }
-            #         case 12:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[25].x,
-            #                 "y": mp_landmarks[25].y,
-            #                 "z": mp_landmarks[25].z
-            #             }
-            #         case 13:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[27].x,
-            #                 "y": mp_landmarks[27].y,
-            #                 "z": mp_landmarks[27].z
-            #             }
-            #         case 14:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[24].x,
-            #                 "y": mp_landmarks[24].y,
-            #                 "z": mp_landmarks[24].z
-            #             }
-            #         case 15:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[26].x,
-            #                 "y": mp_landmarks[26].y,
-            #                 "z": mp_landmarks[26].z
-            #             }
-            #         case 16:
-            #             pos_dict = {
-            #                 "x": mp_landmarks[28].x,
-            #                 "y": mp_landmarks[28].y,
-            #                 "z": mp_landmarks[28].z
-            #             }
-            #         case 17:
-            #             #color details
-            #             pos_dict = None
-            #     full_dict[i] = pos_dict
-            #     '''
-            #     json_data = json.dumps(full_dict)
-            #     try:
-            #         req = requests.post(url,json=json_data)
-            #         req.raise_for_status()
-            #         #print(req.status_code)
-            #         #print(req.json())
-            #     except requests.exceptions.RequestException as e:
-            #         print("Error:", e)
-            #     '''
             if len(fpd.annotated_image) != 0:
                 dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
                 cv2.imshow('Mediapipe', fpd.annotated_image)
@@ -324,7 +183,6 @@ try:
             # Show images
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', color_image)
-            #print(f"Elbow Angle: {angle}")
         
         cv2.waitKey(1)
 
