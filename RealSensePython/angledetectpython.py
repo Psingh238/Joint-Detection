@@ -202,121 +202,120 @@ try:
             # If depth and color resolutions are different, resize color image to match depth image for display 
 
             #As of now, no set relation between mediapip and boeing joints. Will have to try and make one to make this make sense....
-            mp_res = fpd.PoseLandmarkerResult
-            mp_landmarks = mp_res.pose_landmarks
-            #records each key point by using i as the key
-            full_dict = {}
-            #dictionary that is continuously overrided through each loop
-            pos_dict = None
-            #loops 18 times to record all joints and is stored in full dict
+            # mp_res = fpd.PoseLandmarkerResult
+            # mp_landmarks = mp_res.pose_landmarks
+            # #records each key point by using i as the key
+            # full_dict = {}
+            # #dictionary that is continuously overrided through each loop
+            # pos_dict = None
+            # #loops 18 times to record all joints and is stored in full dict
 
-            for i in range(18):        
-                match i:
-                    case 0:
-                        #color joint info
-                        pos_dict = None
-                    case 1:
-                        #color joint info
-                        pos_dict = None
-                    case 2:
-                        pos_dict = {
-                            "x": mp_landmarks[0].x,
-                            "y": mp_landmarks[0].y,
-                            "z": mp_landmarks[0].z
-                        }
-                    case 3:
-                        #color joint info
-                        pos_dict = None
-                    case 4:
-                        pos_dict = {
-                            "x": mp_landmarks[11].x,
-                            "y": mp_landmarks[11].y,
-                            "z": mp_landmarks[11].z
-                        }
-                    case 5:
-                        pos_dict = {
-                            "x": mp_landmarks[13].x,
-                            "y": mp_landmarks[13].y,
-                            "z": mp_landmarks[13].z
-                        }
-                    case 6:
-                        pos_dict = {
-                            "x": mp_landmarks[15].x,
-                            "y": mp_landmarks[15].y,
-                            "z": mp_landmarks[15].z
-                        }
-                    case 7:
-                        #color info
-                        pos_dict = None
-                    case 8:
-                        pos_dict = {
-                            "x": mp_landmarks[12].x,
-                            "y": mp_landmarks[12].y,
-                            "z": mp_landmarks[12].z
-                        }
-                    case 9:
-                        pos_dict = {
-                            "x": mp_landmarks[14].x,
-                            "y": mp_landmarks[14].y,
-                            "z": mp_landmarks[14].z
-                        }
-                    case 10:
-                        pos_dict = {
-                            "x": mp_landmarks[16].x,
-                            "y": mp_landmarks[16].y,
-                            "z": mp_landmarks[16].z
-                        }
-                    case 11:
-                        pos_dict = {
-                            "x": mp_landmarks[23].x,
-                            "y": mp_landmarks[23].y,
-                            "z": mp_landmarks[23].z
-                        }
-                    case 12:
-                        pos_dict = {
-                            "x": mp_landmarks[25].x,
-                            "y": mp_landmarks[25].y,
-                            "z": mp_landmarks[25].z
-                        }
-                    case 13:
-                        pos_dict = {
-                            "x": mp_landmarks[27].x,
-                            "y": mp_landmarks[27].y,
-                            "z": mp_landmarks[27].z
-                        }
-                    case 14:
-                        pos_dict = {
-                            "x": mp_landmarks[24].x,
-                            "y": mp_landmarks[24].y,
-                            "z": mp_landmarks[24].z
-                        }
-                    case 15:
-                        pos_dict = {
-                            "x": mp_landmarks[26].x,
-                            "y": mp_landmarks[26].y,
-                            "z": mp_landmarks[26].z
-                        }
-                    case 16:
-                        pos_dict = {
-                            "x": mp_landmarks[28].x,
-                            "y": mp_landmarks[28].y,
-                            "z": mp_landmarks[28].z
-                        }
-                    case 17:
-                        #color details
-                        pos_dict = None
-                full_dict[i] = pos_dict
-                '''
-                json_data = json.dumps(full_dict)
-                try:
-                    req = requests.post(url,json=json_data)
-                    req.raise_for_status()
-                    #print(req.status_code)
-                    #print(req.json())
-                except requests.exceptions.RequestException as e:
-                    print("Error:", e)
-                '''
-            print(len(fpd.annotated_image))
+            # for i in range(18):        
+            #     match i:
+            #         case 0:
+            #             #color joint info
+            #             pos_dict = None
+            #         case 1:
+            #             #color joint info
+            #             pos_dict = None
+            #         case 2:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[0].x,
+            #                 "y": mp_landmarks[0].y,
+            #                 "z": mp_landmarks[0].z
+            #             }
+            #         case 3:
+            #             #color joint info
+            #             pos_dict = None
+            #         case 4:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[11].x,
+            #                 "y": mp_landmarks[11].y,
+            #                 "z": mp_landmarks[11].z
+            #             }
+            #         case 5:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[13].x,
+            #                 "y": mp_landmarks[13].y,
+            #                 "z": mp_landmarks[13].z
+            #             }
+            #         case 6:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[15].x,
+            #                 "y": mp_landmarks[15].y,
+            #                 "z": mp_landmarks[15].z
+            #             }
+            #         case 7:
+            #             #color info
+            #             pos_dict = None
+            #         case 8:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[12].x,
+            #                 "y": mp_landmarks[12].y,
+            #                 "z": mp_landmarks[12].z
+            #             }
+            #         case 9:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[14].x,
+            #                 "y": mp_landmarks[14].y,
+            #                 "z": mp_landmarks[14].z
+            #             }
+            #         case 10:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[16].x,
+            #                 "y": mp_landmarks[16].y,
+            #                 "z": mp_landmarks[16].z
+            #             }
+            #         case 11:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[23].x,
+            #                 "y": mp_landmarks[23].y,
+            #                 "z": mp_landmarks[23].z
+            #             }
+            #         case 12:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[25].x,
+            #                 "y": mp_landmarks[25].y,
+            #                 "z": mp_landmarks[25].z
+            #             }
+            #         case 13:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[27].x,
+            #                 "y": mp_landmarks[27].y,
+            #                 "z": mp_landmarks[27].z
+            #             }
+            #         case 14:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[24].x,
+            #                 "y": mp_landmarks[24].y,
+            #                 "z": mp_landmarks[24].z
+            #             }
+            #         case 15:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[26].x,
+            #                 "y": mp_landmarks[26].y,
+            #                 "z": mp_landmarks[26].z
+            #             }
+            #         case 16:
+            #             pos_dict = {
+            #                 "x": mp_landmarks[28].x,
+            #                 "y": mp_landmarks[28].y,
+            #                 "z": mp_landmarks[28].z
+            #             }
+            #         case 17:
+            #             #color details
+            #             pos_dict = None
+            #     full_dict[i] = pos_dict
+            #     '''
+            #     json_data = json.dumps(full_dict)
+            #     try:
+            #         req = requests.post(url,json=json_data)
+            #         req.raise_for_status()
+            #         #print(req.status_code)
+            #         #print(req.json())
+            #     except requests.exceptions.RequestException as e:
+            #         print("Error:", e)
+            #     '''
             if len(fpd.annotated_image) != 0:
                 dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
                 cv2.imshow('Mediapipe', fpd.annotated_image)
