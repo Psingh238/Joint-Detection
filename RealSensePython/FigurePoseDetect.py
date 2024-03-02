@@ -16,7 +16,7 @@ class FigurePoseDetect:
     pose_remap = [-1, -2, 0, -3, 11, 13, 15, -4, 12, 14, 16, 23, 25, 27, 24, 26, 28, -5]
 
     def __init__(self):
-        model_path = 'pose_landmarker_full.task'
+        model_path = 'pose_landmarker_heavy.task'
 
         # Configure MediaPipe settings
         BaseOptions = python.BaseOptions
@@ -27,7 +27,10 @@ class FigurePoseDetect:
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
-            running_mode=VisionRunningMode.LIVE_STREAM, result_callback=self.print_result)
+            running_mode=VisionRunningMode.LIVE_STREAM, 
+            min_pose_detection_confidence=0.80,
+            min_tracking_confidence=0.90,
+            result_callback=self.print_result)
 
     # function to return annotated image with pose landmarks on the figure given the result
     # pre: result is valid as it is not empty
