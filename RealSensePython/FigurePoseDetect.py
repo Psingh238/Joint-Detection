@@ -28,8 +28,8 @@ class FigurePoseDetect:
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
             running_mode=VisionRunningMode.LIVE_STREAM, 
-            min_pose_detection_confidence=0.80,
-            min_tracking_confidence=0.90,
+            min_pose_detection_confidence=0.60,
+            min_tracking_confidence=0.70,
             result_callback=self.print_result)
 
     # function to return annotated image with pose landmarks on the figure given the result

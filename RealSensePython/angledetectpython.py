@@ -119,13 +119,14 @@ lower_orange = np.array([10, 50, 70])
 upper_orange = np.array([25, 255, 255])
 
 try:
-    while True:        
+    
+    with fpd.PoseLandmarker.create_from_options(fpd.options) as landmarker:
         
-        with fpd.PoseLandmarker.create_from_options(fpd.options) as landmarker:
-            
-            # Take time for later comparison
-            start_time = time.time()            
-
+        # Take time for later comparison
+        start_time = time.time()
+        
+        while True:        
+                            
             # Wait for a coherent pair of frames: depth and color
             frames = pipeline.wait_for_frames()
             depth_frame = frames.get_depth_frame()
@@ -178,15 +179,15 @@ try:
             angle = elbow_angle(center_green, center_pink, center_orange)
         
             if len(fpd.annotated_image) != 0:
-                dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
+                #dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
                 cv2.imshow('Mediapipe', fpd.annotated_image)
-                cv2.imshow('blended', dst)
+                #cv2.imshow('blended', dst)
             
             # Show images
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', color_image)
         
-        cv2.waitKey(1)
+            cv2.waitKey(1)
 
 finally:
 
