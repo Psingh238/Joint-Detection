@@ -2,7 +2,7 @@
 ## Copyright(c) 2015-2017 Intel Corporation. All Rights Reserved.
 
 ###############################################
-##      Open CV and Numpy integration        ##
+##       OpenCV and Numpy integration        ##
 ###############################################
 
 from re import match
@@ -119,12 +119,13 @@ lower_orange = np.array([10, 50, 70])
 upper_orange = np.array([25, 255, 255])
 
 try:
-    while True:
-        
-        start_time = time.time()
+    while True:        
         
         with fpd.PoseLandmarker.create_from_options(fpd.options) as landmarker:
             
+            # Take time for later comparison
+            start_time = time.time()            
+
             # Wait for a coherent pair of frames: depth and color
             frames = pipeline.wait_for_frames()
             depth_frame = frames.get_depth_frame()
@@ -139,7 +140,8 @@ try:
             # Convert image to MediaPipe image for use with pose landmarker
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=color_image)
             
-            timestamp = int(time.time() - start_time)
+            # Generate timestamp in milliseconds for the callback function
+            timestamp = int((time.time() - start_time) * 1000)
             
             # Perform landmarking
             landmarker.detect_async(mp_image, timestamp)
