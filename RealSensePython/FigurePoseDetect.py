@@ -51,12 +51,12 @@ class FigurePoseDetect:
                 # draw landmarks on the image copy
                 solutions.drawing_utils.draw_landmarks(annotated_image, pose_landmarks_proto, solutions.pose.POSE_CONNECTIONS, solutions.drawing_styles.get_default_pose_landmarks_style())
                 
-                url = "http://10.176.44.232:5000/"
+                url = 'http://10.176.44.232:5000/'
                 pose_dict = {
-                    "marker": 0,
-                    "x": landmarks[0].x,
-                    "y": landmarks[0].y,
-                    "z": landmarks[0].z
+                    'marker': 0,
+                    'x': landmarks[0].x,
+                    'y': landmarks[0].y,
+                    'z': landmarks[0].z
                 }
                 '''
                 json_data = json.dumps(pose_dict)
