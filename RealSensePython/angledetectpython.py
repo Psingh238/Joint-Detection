@@ -65,13 +65,13 @@ def get_magnitude(vector):
     z = vector[2]
     return math.sqrt(pow(x, 2)+pow(y, 2)+pow(z, 2))
 
-def normalize_color(oldHSV):
-    h, s, v = cv2.split(oldHSV)
+def normalize_color(old_hsv):
+    h, s, v = cv2.split(old_hsv)
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
     v = clahe.apply(v)
     
-    oldHSV = cv2.merge([h, s, v])
-    return oldHSV
+    old_hsv = cv2.merge([h, s, v])
+    return old_hsv
 
 # Configure depth and color streams
 pipeline = rs.pipeline()
@@ -152,13 +152,13 @@ try:
             depth_colormap_dim = depth_colormap.shape
             color_colormap_dim = color_image.shape
         
-            HSVImage = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
-            HSVImage = normalize_color(HSVImage)
+            hsv_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
+            hsv_image = normalize_color(hsv_image)
         
-            mask_red = cv2.inRange(HSVImage, lower_red, upper_red)
-            mask_green = cv2.inRange(HSVImage, lower_green, upper_green)
-            mask_pink = cv2.inRange(HSVImage, lower_pink, upper_pink)
-            mask_orange = cv2.inRange(HSVImage, lower_orange, upper_orange)
+            mask_red = cv2.inRange(hsv_image, lower_red, upper_red)
+            mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
+            mask_pink = cv2.inRange(hsv_image, lower_pink, upper_pink)
+            mask_orange = cv2.inRange(hsv_image, lower_orange, upper_orange)
         
             mask_red = cv2.medianBlur(mask_red, 3)
             mask_green = cv2.medianBlur(mask_green, 3)
