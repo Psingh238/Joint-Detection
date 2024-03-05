@@ -5,7 +5,6 @@
 ##       OpenCV and Numpy integration        ##
 ###############################################
 
-from re import match
 import time
 import pyrealsense2 as rs
 import numpy as np

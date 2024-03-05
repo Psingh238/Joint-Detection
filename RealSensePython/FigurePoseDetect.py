@@ -1,8 +1,4 @@
-import time
-from typing import Annotated
 import numpy as np
-import cv2
-import math
 import mediapipe as mp
 import requests
 import json
