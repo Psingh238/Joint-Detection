@@ -1,5 +1,6 @@
 import numpy as np
 import mediapipe as mp
+import cv2
 import json
 import msvcrt
 from mediapipe.tasks import python
@@ -95,12 +96,16 @@ class FigurePoseDetect:
             
             full_dict = self.__remap_landmarks(result)
             
+            left_shoulder = landmarks[0][11]
+            
             if msvcrt.kbhit() and msvcrt.getche() == b'p':
+                print(f'Left shoulder: {landmarks[0][11].x}')
                 with open('test_joint_data.json', 'w') as file:
                     json.dump(full_dict, file)
                     
             # draw the pose on given image and return for access outside class
             self.annotated_image = self.draw_landmarks(result, output_image)
+            self.annotated_image = cv2.circle(self.annotated_image,[int(left_shoulder.x * 640), int(left_shoulder.y * 480)],10,[0, 0, 255],5)
 
 
 
