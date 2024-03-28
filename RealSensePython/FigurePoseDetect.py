@@ -21,6 +21,8 @@ class FigurePoseDetect:
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
         self.PoseLandmarkerResult = vision.PoseLandmarkerResult
         self.annotated_image = []
+        self.full_dict = []
+        self.pose_remap = [-1, -2, 0, -3, 12, 14, 16, -4, 11, 13, 15, 24, 26, 28, 23, 25, 27, -5]
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),

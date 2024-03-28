@@ -14,6 +14,7 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 import FigurePoseDetect
+import msvcrt
 
 # Function definitions
 
@@ -99,21 +100,20 @@ pipeline.start(config)
 # define lower and upper bounds for each color
 # These are organized as Hue, Saturation, and Value
 # Hue goes from 0 deg to 180 deg while Saturation and Value goes from 0 to 255
+
+#lower mid torso
 lower_red = np.array([160, 20, 20])
 upper_red = np.array([179, 255,255])
-
+#upper mid torso
 lower_green = np.array([40,50,40])
 upper_green = np.array([80, 255, 255])
-        
+#right mid shoulder
 lower_pink = np.array([135, 50, 50])
 upper_pink = np.array([155, 255, 255])
-
-lower_yellow = np.array([25, 50, 50])
-upper_yellow = np.array([35, 255, 255])
-
+#left mid shoulder
 lower_green = np.array([36, 50, 70])
 upper_green = np.array([89, 255, 255])
-
+#neck base
 lower_orange = np.array([10, 50, 70])
 upper_orange = np.array([25, 255, 255])
 
@@ -172,9 +172,19 @@ try:
         
             center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
             center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
-            center_pink = draw_bound_box((255, 0, 255), contours_pink, color_image, depth_frame)
-            center_orange = draw_bound_box((255, 255, 0), contours_pink, color_image, depth_frame)
-        
+            center_pink = draw_bound_box((255, 192, 203), contours_pink, color_image, depth_frame)
+            center_orange = draw_bound_box((255, 165, 0), contours_orange, color_image, depth_frame)
+            center_list = [center_red, center_green, center_pink, center_orange]
+            for marker in range(len(fpd.pose_remap)):
+                if(fpd.pose_remap[marker] < 0):
+                    pose_dict = {
+                        'marker': marker,
+                        'x': center_list[-(fpd.pose_remap[marker])+1][2],
+                        'y': -(center_list[-(fpd.pose_remap[marker])+1][0]),
+                        'z': -(center_list[-(fpd.pose_remap[marker])+1][1])
+                    }
+                    fpd.full_dict[marker] = pose_dict
+                
             angle = elbow_angle(center_green, center_pink, center_orange)
         
             if len(fpd.annotated_image) != 0:
