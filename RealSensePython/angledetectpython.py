@@ -111,8 +111,8 @@ upper_green = np.array([80, 255, 255])
 lower_pink = np.array([135, 50, 50])
 upper_pink = np.array([155, 255, 255])
 #left mid shoulder
-lower_green = np.array([36, 50, 70])
-upper_green = np.array([89, 255, 255])
+lower_yellow = np.array([22, 93, 20])
+upper_yellow = np.array([45, 255, 255])
 #neck base
 lower_orange = np.array([10, 50, 70])
 upper_orange = np.array([25, 255, 255])
@@ -159,22 +159,27 @@ try:
             mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
             mask_pink = cv2.inRange(hsv_image, lower_pink, upper_pink)
             mask_orange = cv2.inRange(hsv_image, lower_orange, upper_orange)
+            mask_yellow = cv2.inRange(hsv_image, lower_yellow, upper_yellow)
         
             mask_red = cv2.medianBlur(mask_red, 3)
             mask_green = cv2.medianBlur(mask_green, 3)
             mask_pink = cv2.medianBlur(mask_pink, 3)
             mask_orange = cv2.medianBlur(mask_orange, 3)
+            mask_yellow = cv2.medianBlur(mask_yellow, 3)
         
             contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_pink, _ = cv2.findContours(mask_pink, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_orange, _ = cv2.findContours(mask_orange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_yellow, _ = cv2.findContours(mask_yellow, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
             center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
             center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
             center_pink = draw_bound_box((255, 192, 203), contours_pink, color_image, depth_frame)
             center_orange = draw_bound_box((255, 165, 0), contours_orange, color_image, depth_frame)
-            center_list = [center_red, center_green, center_pink, center_orange]
+            center_yellow = draw_bound_box((255, 165, 0), contours_yellow, color_image, depth_frame)
+            center_list = [center_red, center_green, center_pink, center_yellow, center_orange]
+            
             for marker in range(len(fpd.pose_remap)):
                 if(fpd.pose_remap[marker] < 0):
                     pose_dict = {
@@ -185,7 +190,7 @@ try:
                     }
                     fpd.full_dict[marker] = pose_dict
                 
-            angle = elbow_angle(center_green, center_pink, center_orange)
+            #angle = elbow_angle(center_green, center_pink, center_orange)
         
             if len(fpd.annotated_image) != 0:
                 #dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
