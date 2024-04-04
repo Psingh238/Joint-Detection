@@ -177,7 +177,7 @@ try:
             center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
             center_pink = draw_bound_box((255, 192, 203), contours_pink, color_image, depth_frame)
             center_orange = draw_bound_box((255, 165, 0), contours_orange, color_image, depth_frame)
-            center_yellow = draw_bound_box((255, 165, 0), contours_yellow, color_image, depth_frame)
+            center_yellow = draw_bound_box((255, 255, 0), contours_yellow, color_image, depth_frame)
             center_list = [center_red, center_green, center_pink, center_yellow, center_orange]
             
             for marker in range(len(fpd.pose_remap)):
