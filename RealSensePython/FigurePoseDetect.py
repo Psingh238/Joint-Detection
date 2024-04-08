@@ -80,10 +80,11 @@ class FigurePoseDetect:
                     pose_dict = {
                         'marker': index,
                         'x': mp_landmarks[val].z,
-                        'y': -(mp_landmarks[val].x),
+                        'y': mp_landmarks[val].x,
                         'z': -(mp_landmarks[val].y)
                         }
                     full_dict.append(pose_dict)
+                
                 index += 1
         
         return full_dict
@@ -96,14 +97,14 @@ class FigurePoseDetect:
         # This ensures list indexing is successful
         if len(landmarks) != 0:
             
-            full_dict = self.__remap_landmarks(result)
-            
+            self.full_dict = self.__remap_landmarks(result)
+            print(len(self.full_dict))
             left_shoulder = landmarks[0][11]
             
             if msvcrt.kbhit() and msvcrt.getche() == b'p':
                 print(f'Left shoulder: {landmarks[0][11].x}')
                 with open('test_joint_data.json', 'w') as file:
-                    json.dump(full_dict, file)
+                    json.dump(self.full_dict, file)
                     
             # draw the pose on given image and return for access outside class
             self.annotated_image = self.draw_landmarks(result, output_image)

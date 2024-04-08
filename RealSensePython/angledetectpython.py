@@ -5,6 +5,7 @@
 ##       OpenCV and Numpy integration        ##
 ###############################################
 
+from multiprocessing import Value
 import time
 import pyrealsense2 as rs
 import numpy as np
@@ -21,13 +22,14 @@ import msvcrt
 def draw_bound_box(color, color_contour, color_image, d_frame):
     max_area_color = -1
     largest_contour_index_color = -1
-    min_area = 100.0
+    min_area = 50.0
+    max_area=300
     center_color = None
     for i in range (0, len(color_contour)):
         cnt = color_contour[i]
         
         area = cv2.contourArea(cnt)
-        if(area > max_area_color and area > min_area):
+        if(area > max_area_color and area > min_area and area < max_area):
             max_area_color = area
             largest_contour_index_color = i
     
@@ -66,13 +68,14 @@ def get_magnitude(vector):
     z = vector[2]
     return math.sqrt(pow(x, 2)+pow(y, 2)+pow(z, 2))
 
-def normalize_color(old_hsv):
-    h, s, v = cv2.split(old_hsv)
-    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
-    v = clahe.apply(v)
-    
-    old_hsv = cv2.merge([h, s, v])
-    return old_hsv
+def normalize_color(old_img):
+    lab = cv2.cvtColor(old_img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    cl = clahe.apply(l)
+    limg = cv2.merge((cl, a, b))
+    enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+    return enhanced_img
 
 # Configure depth and color streams
 pipeline = rs.pipeline()
@@ -101,21 +104,22 @@ pipeline.start(config)
 # These are organized as Hue, Saturation, and Value
 # Hue goes from 0 deg to 180 deg while Saturation and Value goes from 0 to 255
 
-#lower mid torso
-lower_red = np.array([160, 20, 20])
-upper_red = np.array([179, 255,255])
-#upper mid torso
-lower_green = np.array([40,50,40])
-upper_green = np.array([80, 255, 255])
-#right mid shoulder
-lower_pink = np.array([135, 50, 50])
-upper_pink = np.array([155, 255, 255])
-#left mid shoulder
-lower_yellow = np.array([22, 93, 20])
-upper_yellow = np.array([45, 255, 255])
-#neck base
-lower_orange = np.array([10, 50, 70])
-upper_orange = np.array([25, 255, 255])
+#lower mid torso :/
+lower_red = np.array([0, 100, 100])
+upper_red = np.array([10, 255,255])
+#upper mid torso :)
+lower_blue = np.array([100,100,100])
+upper_blue = np.array([140, 255, 255])
+#right mid shoulder :)
+lower_pink = np.array([140, 100, 100])
+upper_pink = np.array([170, 255, 255])
+#left mid shoulder :)
+lower_yellow = np.array([20, 100, 100])
+upper_yellow = np.array([35, 255, 255])
+#neck base :)
+lower_orange = np.array([1, 50, 50])
+upper_orange = np.array([18, 255, 255])
+
 
 try:
     
@@ -151,43 +155,67 @@ try:
 
             depth_colormap_dim = depth_colormap.shape
             color_colormap_dim = color_image.shape
-        
+            #color_image = normalize_color(color_image)
+            
             hsv_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
-            hsv_image = normalize_color(hsv_image)
+            h, s, v = cv2.split(hsv_image)
+            vlim = 0+30
+            v[v<vlim] = 0
+            v[v>=vlim] -= 30
+            
+            hsv_image = cv2.merge((h,s,v))
+            color_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
+            #hsv_image = normalize_color(hsv_image)
         
             mask_red = cv2.inRange(hsv_image, lower_red, upper_red)
-            mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
+            mask_blue = cv2.inRange(hsv_image, lower_blue, upper_blue)
             mask_pink = cv2.inRange(hsv_image, lower_pink, upper_pink)
             mask_orange = cv2.inRange(hsv_image, lower_orange, upper_orange)
             mask_yellow = cv2.inRange(hsv_image, lower_yellow, upper_yellow)
+            mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
         
             mask_red = cv2.medianBlur(mask_red, 3)
-            mask_green = cv2.medianBlur(mask_green, 3)
+            mask_blue = cv2.medianBlur(mask_blue, 3)
             mask_pink = cv2.medianBlur(mask_pink, 3)
             mask_orange = cv2.medianBlur(mask_orange, 3)
             mask_yellow = cv2.medianBlur(mask_yellow, 3)
+            mask_green = cv2.medianBlur(mask_green, 3)
         
             contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_pink, _ = cv2.findContours(mask_pink, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_orange, _ = cv2.findContours(mask_orange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_yellow, _ = cv2.findContours(mask_yellow, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
             center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
-            center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
-            center_pink = draw_bound_box((255, 192, 203), contours_pink, color_image, depth_frame)
-            center_orange = draw_bound_box((255, 165, 0), contours_orange, color_image, depth_frame)
-            center_yellow = draw_bound_box((255, 255, 0), contours_yellow, color_image, depth_frame)
-            center_list = [center_red, center_green, center_pink, center_yellow, center_orange]
+            center_blue = draw_bound_box((255, 0, 0), contours_blue, color_image, depth_frame)
+            center_pink = draw_bound_box((203, 192, 255), contours_pink, color_image, depth_frame)
+            center_orange = draw_bound_box((0, 165, 255), contours_orange, color_image, depth_frame)
+            center_yellow = draw_bound_box((0, 255, 255), contours_yellow, color_image, depth_frame)
+            center_green = draw_bound_box((0, 255, 255), contours_green, color_image, depth_frame)
             
+            center_list = [center_red, center_blue, center_pink, center_yellow, center_orange, center_green]
+            print(center_list)
+            colors_found = True
+            for color in center_list:
+                if color == None:
+                    colors_found = False
             for marker in range(len(fpd.pose_remap)):
-                if(fpd.pose_remap[marker] < 0):
+                print(len(fpd.full_dict))
+                if(fpd.pose_remap[marker] < 0 and colors_found and len(fpd.full_dict)==18):
+
+                    color_index = -(fpd.pose_remap[marker]) - 1
+                    
+                    print(color_index)
+                    
                     pose_dict = {
                         'marker': marker,
-                        'x': center_list[-(fpd.pose_remap[marker])+1][2],
-                        'y': -(center_list[-(fpd.pose_remap[marker])+1][0]),
-                        'z': -(center_list[-(fpd.pose_remap[marker])+1][1])
+                        'x': center_list[color_index][0],
+                        'y': center_list[color_index][2],
+                        'z': -(center_list[color_index][1])
                     }
+                    print(fpd.full_dict)
                     fpd.full_dict[marker] = pose_dict
                 
             #angle = elbow_angle(center_green, center_pink, center_orange)
