@@ -108,9 +108,9 @@ pipeline.start(config)
 # These are organized as Hue, Saturation, and Value
 # Hue goes from 0 deg to 180 deg while Saturation and Value goes from 0 to 255
 
-#lower mid torso :/
-lower_red = np.array([0, 100, 100])
-upper_red = np.array([10, 255,255])
+#lower mid torso :)
+lower_red = np.array([168, 100, 100])
+upper_red = np.array([179, 255,255])
 #upper mid torso :)
 lower_blue = np.array([100,100,100])
 upper_blue = np.array([140, 255, 255])
@@ -118,13 +118,15 @@ upper_blue = np.array([140, 255, 255])
 lower_pink = np.array([140, 100, 100])
 upper_pink = np.array([170, 255, 255])
 #left mid shoulder :)
-lower_yellow = np.array([20, 100, 100])
-upper_yellow = np.array([35, 255, 255])
+lower_green = np.array([40, 70, 70])
+upper_green = np.array([80, 255, 255])
 #neck base :)
 lower_orange = np.array([1, 50, 50])
 upper_orange = np.array([18, 255, 255])
 
+#ex: http://www.exampledomain.com:8080
 api_url = input("Enter API url for data transmission")
+
 try:
     
     with fpd.PoseLandmarker.create_from_options(fpd.options) as landmarker:
@@ -175,27 +177,27 @@ try:
             mask_blue = cv2.inRange(hsv_image, lower_blue, upper_blue)
             mask_pink = cv2.inRange(hsv_image, lower_pink, upper_pink)
             mask_orange = cv2.inRange(hsv_image, lower_orange, upper_orange)
-            mask_yellow = cv2.inRange(hsv_image, lower_yellow, upper_yellow)
+            mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
         
             mask_red = cv2.medianBlur(mask_red, 3)
             mask_blue = cv2.medianBlur(mask_blue, 3)
             mask_pink = cv2.medianBlur(mask_pink, 3)
             mask_orange = cv2.medianBlur(mask_orange, 3)
-            mask_yellow = cv2.medianBlur(mask_yellow, 3)
+            mask_green = cv2.medianBlur(mask_green, 3)
         
             contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_pink, _ = cv2.findContours(mask_pink, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_orange, _ = cv2.findContours(mask_orange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours_yellow, _ = cv2.findContours(mask_yellow, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
             center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
             center_blue = draw_bound_box((255, 0, 0), contours_blue, color_image, depth_frame)
             center_pink = draw_bound_box((203, 192, 255), contours_pink, color_image, depth_frame)
             center_orange = draw_bound_box((0, 165, 255), contours_orange, color_image, depth_frame)
-            center_yellow = draw_bound_box((0, 255, 255), contours_yellow, color_image, depth_frame)
+            center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
             
-            center_list = [center_red, center_blue, center_pink, center_yellow, center_orange]
+            center_list = [center_red, center_blue, center_pink, center_green, center_orange]
             print(center_list)
             colors_found = True
             for color in center_list:
@@ -219,6 +221,7 @@ try:
                     fpd.full_dict[marker] = pose_dict
             
             #transmits data
+            '''
             if colors_found and (len(fpd.annotated_image) != 0):
                 #transmit data
                 print("transmitting")
@@ -232,7 +235,7 @@ try:
                 with open('pose_data.csv', mode='rb') as file:
                     response = requests.post(api_url, files={'pose_data.csv': file})
                 time.sleep(10)
-            
+            '''
             #angle = elbow_angle(center_green, center_pink, center_orange)
         
             if len(fpd.annotated_image) != 0:
