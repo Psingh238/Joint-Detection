@@ -134,7 +134,10 @@ else:
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
 # Start streaming
-pipeline.start(config)
+profile = pipeline.start(config)
+
+sensor = pipeline.get_active_profile().get_device().query_sensors()[0]
+sensor.set_option(rs.option.exposure, 45000)
 
 # define lower and upper bounds for each color
 # These are organized as Hue, Saturation, and Value
