@@ -64,20 +64,26 @@ class FigurePoseDetect:
             mp_landmarks = mp_landmarks_list[0]
             for val in FigurePoseDetect.pose_remap:
                 if val < 0:
+                    '''
                     pose_dict = {
                         'marker': index,
                         'x': 0.0,
                         'y': 0.0,
                         'z': 0.0
                         }
+                    '''
+                    pose_dict = [float(index), 0.0, 0.0, 0.0]
                     full_dict.append(pose_dict)
                 else:
+                    '''    
                     pose_dict = {
                         'marker': index,
                         'x': mp_landmarks[val].z,
                         'y': mp_landmarks[val].x,
                         'z': -(mp_landmarks[val].y)
                         }
+                    '''
+                    pose_dict = [mp_landmarks[val].z, mp_landmarks[val].x, -(mp_landmarks[val].y)]
                     full_dict.append(pose_dict)
                 
                 index += 1

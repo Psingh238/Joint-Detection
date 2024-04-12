@@ -28,15 +28,18 @@ import time
 
 def conversion_ratio(full_pose_dict, image_dim, depth_frame):
     left_shoulder = full_pose_dict[8]
-    
+    print(left_shoulder)
     # Prior coordinate translation needs to be reversed
-    left_shoulder_depth = left_shoulder['x']
-    left_shoulder_imageX = left_shoulder['y']
-    left_shoulder_imageY = -left_shoulder['z']
+    left_shoulder_depth = left_shoulder[0]
+    left_shoulder_imageX = left_shoulder[1]
+    left_shoulder_imageY = -left_shoulder[2]
 
     # The ratio returned is simply the MediaPipe depth at a certain keypoint compared with the actual depth in meters.
-    real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[0]), int(left_shoulder_imageY * image_dim[1]))
+    real_depth = 0.0
     
+    while real_depth==0.0:
+        real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
+        
     return left_shoulder_depth / real_depth
 
 
@@ -69,7 +72,7 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
         cv2.rectangle(color_image, (x, y),(x+w, y+h),color,2)
         
         color_depth = rs.depth_frame.get_distance(d_frame, int(x+(w/2)), int(y+(h/2)))
-        center_color = (float(x+(w/2)),float(y+(h/2)), color_depth)
+        center_color = [float(x+(w/2)),float(y+(h/2)), color_depth]
         cv2.drawMarker(color_image, (int(center_color[0]), int(center_color[1])), color, cv2.MARKER_CROSS, 20, 3)
     
     return center_color
@@ -137,7 +140,7 @@ else:
 profile = pipeline.start(config)
 
 sensor = pipeline.get_active_profile().get_device().query_sensors()[0]
-sensor.set_option(rs.option.exposure, 45000)
+sensor.set_option(rs.option.exposure, 35000)
 
 # define lower and upper bounds for each color
 # These are organized as Hue, Saturation, and Value
@@ -147,7 +150,7 @@ sensor.set_option(rs.option.exposure, 45000)
 lower_red = np.array([168, 100, 100])
 upper_red = np.array([179, 255,255])
 #upper mid torso :)
-lower_blue = np.array([100,100,100])
+lower_blue = np.array([90,100,100])
 upper_blue = np.array([140, 255, 255])
 #right mid shoulder :)
 lower_pink = np.array([140, 100, 100])
@@ -157,7 +160,7 @@ lower_green = np.array([40, 70, 70])
 upper_green = np.array([80, 255, 255])
 #neck base :)
 lower_orange = np.array([1, 50, 50])
-upper_orange = np.array([18, 255, 255])
+upper_orange = np.array([25, 255, 255])
 
 #ex: http://www.exampledomain.com:8080
 api_url = input("Enter API url for data transmission")
@@ -257,13 +260,15 @@ try:
                     if(fpd.pose_remap[marker] < 0):
 
                         color_index = -(fpd.pose_remap[marker]) - 1
-
+                        '''
                         pose_dict = {
                             'marker': marker,
                             'x': center_list[color_index][0],
                             'y': center_list[color_index][2] * ratio,
                             'z': -(center_list[color_index][1])
                         }
+                        '''
+                        pose_dict = [float(marker), center_list[color_index][0], center_list[color_index][2] * ratio, -(center_list[color_index][1])]
                         fpd.full_dict[marker] = pose_dict
             
             #transmits data
@@ -272,13 +277,17 @@ try:
                 #transmit data
                 print("transmitting")
                 data_info = ['marker', 'x', 'y', 'z']
-                csv_data = ','.join(map(str, fpd.full_dict))
+                csv_data = ''
+                for marker in fpd.full_dict:
+                    csv_data += ','.join(map(str, marker))
+                    csv_data += '\r\n'
                 print(csv_data)
+                '''
                 requests.get(api_url)
                 response = requests.post(api_url, csv_data)
                 print(response.status_code)
                 print(response.text)
-                '''
+                
                 with open('pose_data.csv', 'w') as csvfile:    
                     writer = csv.DictWriter(csvfile, fieldnames=data_info)
                     writer.writeheader()
