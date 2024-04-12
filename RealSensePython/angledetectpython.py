@@ -23,6 +23,33 @@ import time
 
 # Function definitions
 
+# Function to calculate the necessary conversion ratio between real-life meter measurements and MediaPipe values
+# pre: MediaPipe has calculated keypoints and the pose dict is populated with values
+
+def conversion_ratio(full_pose_dict, image_dim, depth_frame):
+    left_shoulder = full_pose_dict[8]
+    
+    # Prior coordinate translation needs to be reversed
+    left_shoulder_depth = left_shoulder['x']
+    left_shoulder_imageX = left_shoulder['y']
+    left_shoulder_imageY = -left_shoulder['z']
+
+    # The ratio returned is simply the MediaPipe depth at a certain keypoint compared with the actual depth in meters.
+    real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[0]), int(left_shoulder_imageY * image_dim[1]))
+    
+    return left_shoulder_depth / real_depth
+
+
+# Function to normalize the x and y coordinates of the color markers similar to MediaPipe Model
+
+def normalize_coords(color_marker_list, image_dim):
+    for color_marker in color_marker_list:
+        color_marker[0] = float(color_marker[0] / image_dim[0])
+        color_marker[1] = float(color_marker[1] / image_dim[1])
+    
+    return color_marker_list
+
+# Function that figures out the contours for a particular color and makes a bounding box on the image for it.
 def draw_bound_box(color, color_contour, color_image, d_frame):
     max_area_color = -1
     largest_contour_index_color = -1
@@ -46,6 +73,8 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
         cv2.drawMarker(color_image, (int(center_color[0]), int(center_color[1])), color, cv2.MARKER_CROSS, 20, 3)
     
     return center_color
+
+# Function used to calculate co-planar angle given 3 points in 3D space
         
 def elbow_angle(forearm, joint, backarm):
     
@@ -64,13 +93,16 @@ def elbow_angle(forearm, joint, backarm):
         
         return (theta*180)/math.pi
     return -1
-          
+
+# Helper function for calculating co-planar angle          
         
 def get_magnitude(vector):
     x = vector[0]
     y = vector[1]
     z = vector[2]
     return math.sqrt(pow(x, 2)+pow(y, 2)+pow(z, 2))
+
+# Function to normalize the lighting of the image
 
 def normalize_color(old_img):
     lab = cv2.cvtColor(old_img, cv2.COLOR_BGR2LAB)
@@ -173,24 +205,29 @@ try:
             color_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
             #hsv_image = normalize_color(hsv_image)
         
+            # These functions create the necessary masks for each color
             mask_red = cv2.inRange(hsv_image, lower_red, upper_red)
             mask_blue = cv2.inRange(hsv_image, lower_blue, upper_blue)
             mask_pink = cv2.inRange(hsv_image, lower_pink, upper_pink)
             mask_orange = cv2.inRange(hsv_image, lower_orange, upper_orange)
             mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
         
+            # These functions update the mask and add a blur to them to reduce jittering
             mask_red = cv2.medianBlur(mask_red, 3)
             mask_blue = cv2.medianBlur(mask_blue, 3)
             mask_pink = cv2.medianBlur(mask_pink, 3)
             mask_orange = cv2.medianBlur(mask_orange, 3)
             mask_green = cv2.medianBlur(mask_green, 3)
-        
+            
+            # Here, all the contours are calculated from the masks
             contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_pink, _ = cv2.findContours(mask_pink, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_orange, _ = cv2.findContours(mask_orange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
+            # The functions draw an appropriately colored rectange and also returns 3D coordinates crossed
+            # between the 2D image coordinates the 3D depth data for the center of the rectangles
             center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
             center_blue = draw_bound_box((255, 0, 0), contours_blue, color_image, depth_frame)
             center_pink = draw_bound_box((203, 192, 255), contours_pink, color_image, depth_frame)
@@ -199,23 +236,32 @@ try:
             
             center_list = [center_red, center_blue, center_pink, center_green, center_orange]
             
+            ratio = 0.0
             colors_found = True
             for color in center_list:
                 if color == None:
                     colors_found = False
-            for marker in range(len(fpd.pose_remap)):
-                print(len(fpd.full_dict))
-                if(fpd.pose_remap[marker] < 0 and colors_found and len(fpd.full_dict)==18):
+                
+            if len(fpd.full_dict) == 18 and colors_found:
+                
+                # Figure out conversion ratio
+                ratio = conversion_ratio(fpd.full_dict, depth_colormap_dim, depth_frame)
+                
+                # normalize color coordinates
+                center_list = normalize_coords(center_list, color_colormap_dim)
+                
+                for marker in range(len(fpd.pose_remap)):
+                    if(fpd.pose_remap[marker] < 0):
 
-                    color_index = -(fpd.pose_remap[marker]) - 1
-                    
-                    pose_dict = {
-                        'marker': marker,
-                        'x': center_list[color_index][0],
-                        'y': center_list[color_index][2],
-                        'z': -(center_list[color_index][1])
-                    }
-                    fpd.full_dict[marker] = pose_dict
+                        color_index = -(fpd.pose_remap[marker]) - 1
+
+                        pose_dict = {
+                            'marker': marker,
+                            'x': center_list[color_index][0],
+                            'y': center_list[color_index][2] * ratio,
+                            'z': -(center_list[color_index][1])
+                        }
+                        fpd.full_dict[marker] = pose_dict
             
             #transmits data
             '''

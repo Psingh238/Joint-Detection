@@ -64,11 +64,6 @@ class FigurePoseDetect:
             mp_landmarks = mp_landmarks_list[0]
             for val in FigurePoseDetect.pose_remap:
                 if val < 0:
-                    # pose_dict = {
-                    #     'x': color_landmarks[-(val+1)][2], 
-                    #     'y': -(color_landmarks[-(val+1)][0]),
-                    #     'z': -(color_landmarks[-(val+1)][1])
-                    # }
                     pose_dict = {
                         'marker': index,
                         'x': 0.0,
@@ -98,11 +93,9 @@ class FigurePoseDetect:
         if len(landmarks) != 0:
             
             self.full_dict = self.__remap_landmarks(result)
-            print(len(self.full_dict))
             left_shoulder = landmarks[0][11]
             
             if msvcrt.kbhit() and msvcrt.getche() == b'p':
-                print(f'Left shoulder: {landmarks[0][11].x}')
                 with open('test_joint_data.json', 'w') as file:
                     json.dump(self.full_dict, file)
                     
