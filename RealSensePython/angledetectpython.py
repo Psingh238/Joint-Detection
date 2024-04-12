@@ -198,7 +198,7 @@ try:
             center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
             
             center_list = [center_red, center_blue, center_pink, center_green, center_orange]
-            print(center_list)
+            
             colors_found = True
             for color in center_list:
                 if color == None:
@@ -209,15 +209,12 @@ try:
 
                     color_index = -(fpd.pose_remap[marker]) - 1
                     
-                    print(color_index)
-                    
                     pose_dict = {
                         'marker': marker,
                         'x': center_list[color_index][0],
                         'y': center_list[color_index][2],
                         'z': -(center_list[color_index][1])
                     }
-                    print(fpd.full_dict)
                     fpd.full_dict[marker] = pose_dict
             
             #transmits data
