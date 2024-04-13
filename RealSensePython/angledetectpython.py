@@ -30,9 +30,9 @@ def conversion_ratio(full_pose_dict, image_dim, depth_frame):
     left_shoulder = full_pose_dict[8]
     print(left_shoulder)
     # Prior coordinate translation needs to be reversed
-    left_shoulder_depth = left_shoulder[0]
-    left_shoulder_imageX = left_shoulder[1]
-    left_shoulder_imageY = -left_shoulder[2]
+    left_shoulder_depth = left_shoulder[1]
+    left_shoulder_imageX = left_shoulder[2]
+    left_shoulder_imageY = -left_shoulder[3]
 
     # The ratio returned is simply the MediaPipe depth at a certain keypoint compared with the actual depth in meters.
     real_depth = 0.0
@@ -57,7 +57,7 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
     max_area_color = -1
     largest_contour_index_color = -1
     min_area = 50.0
-    max_area=300
+    max_area = 300
     center_color = None
     for i in range (0, len(color_contour)):
         cnt = color_contour[i]
@@ -203,7 +203,7 @@ try:
             
             hsv_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
             h, s, v = cv2.split(hsv_image)
-            vlim = 0+30
+            vlim = 30
             v[v<vlim] = 0
             v[v>=vlim] -= 30
             
@@ -268,7 +268,7 @@ try:
                             'z': -(center_list[color_index][1])
                         }
                         '''
-                        pose_dict = [float(marker), center_list[color_index][0], center_list[color_index][2] * ratio, -(center_list[color_index][1])]
+                        pose_dict = [marker, center_list[color_index][0], center_list[color_index][2] * ratio, -(center_list[color_index][1])]
                         fpd.full_dict[marker] = pose_dict
             
             #transmits data
