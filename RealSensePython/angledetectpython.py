@@ -47,8 +47,8 @@ def conversion_ratio(full_pose_dict, image_dim, depth_frame):
 
 def normalize_coords(color_marker_list, image_dim):
     for color_marker in color_marker_list:
-        color_marker[0] = float(color_marker[0] / image_dim[0])
-        color_marker[1] = float(color_marker[1] / image_dim[1])
+        color_marker[0] = float(color_marker[0] / image_dim[1])
+        color_marker[1] = float(color_marker[1] / image_dim[0])
     
     return color_marker_list
 
