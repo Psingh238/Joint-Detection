@@ -37,8 +37,8 @@ def conversion_ratio(full_pose_dict, image_dim, depth_frame):
     # The ratio returned is simply the MediaPipe depth at a certain keypoint compared with the actual depth in meters.
     real_depth = 0.0
     
-    while real_depth==0.0:
-        real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
+    while real_depth<=0.0:
+       real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
         
     return left_shoulder_depth / real_depth
 
@@ -70,7 +70,7 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
     if(largest_contour_index_color != -1):
         x, y, w, h = cv2.boundingRect(color_contour[largest_contour_index_color])
         
-        cv2.circle(color_image, (x+(w/2),y+(h/2)), 10, color, 2)
+        cv2.circle(color_image, (int(x+(w/2)),int(y+(h/2))), 10, color, 2)
         color_depth = rs.depth_frame.get_distance(d_frame, int(x+(w/2)), int(y+(h/2)))
         center_color = [float(x+(w/2)),float(y+(h/2)), color_depth]
         cv2.drawMarker(color_image, (int(center_color[0]), int(center_color[1])), color, cv2.MARKER_CROSS, 20, 3)
@@ -140,27 +140,27 @@ else:
 profile = pipeline.start(config)
 
 sensor = pipeline.get_active_profile().get_device().query_sensors()[0]
-sensor.set_option(rs.option.exposure, 35000)
+sensor.set_option(rs.option.exposure, 42000)
 
 # define lower and upper bounds for each color
 # These are organized as Hue, Saturation, and Value
 # Hue goes from 0 deg to 180 deg while Saturation and Value goes from 0 to 255
 
-#lower mid torso :)
+#lower mid torso [0]
 lower_red = np.array([168, 100, 100])
 upper_red = np.array([179, 255,255])
-#upper mid torso :)
+#upper mid torso [1]
 lower_blue = np.array([90,100,100])
 upper_blue = np.array([140, 255, 255])
-#right mid shoulder :)
+#right mid shoulder [3]
 lower_pink = np.array([140, 100, 100])
 upper_pink = np.array([170, 255, 255])
-#left mid shoulder :)
+#left mid shoulder [7]
 lower_green = np.array([40, 70, 70])
 upper_green = np.array([80, 255, 255])
-#neck base :)
-lower_orange = np.array([1, 50, 50])
-upper_orange = np.array([25, 255, 255])
+#neck base [17]
+lower_orange = np.array([0, 70, 70])
+upper_orange = np.array([30, 255, 255])
 
 #ex: http://www.exampledomain.com:8080
 api_url = input("Enter API url for data transmission")
@@ -171,7 +171,7 @@ try:
         
         # Take time for later comparison
         start_time = time.time()
-        
+        write_count = 1
         while True:        
                             
             # Wait for a coherent pair of frames: depth and color
@@ -242,7 +242,7 @@ try:
             
             center_list = [center_red, center_blue, center_pink, center_green, center_orange]
             
-            ratio = 0.0
+            
             colors_found = True
             for color in center_list:
                 if color == None:
@@ -251,7 +251,9 @@ try:
             if len(fpd.full_dict) == 18 and colors_found:
                 
                 # Figure out conversion ratio
-                ratio = conversion_ratio(fpd.full_dict, depth_colormap_dim, depth_frame)
+                ratio = -1.0
+                if(ratio == -1.0):
+                    ratio = conversion_ratio(fpd.full_dict, depth_colormap_dim, depth_frame)
                 
                 # normalize color coordinates
                 center_list = normalize_coords(center_list, color_colormap_dim)
@@ -268,7 +270,7 @@ try:
                             'z': -(center_list[color_index][1])
                         }
                         '''
-                        pose_dict = [marker, center_list[color_index][0], center_list[color_index][2] * ratio, -(center_list[color_index][1])]
+                        pose_dict = [marker, center_list[color_index][2], center_list[color_index][0] * ratio, -(center_list[color_index][1])]
                         fpd.full_dict[marker] = pose_dict
             
             #transmits data
@@ -282,9 +284,13 @@ try:
                     csv_data += ','.join(map(str, marker))
                     csv_data += '\r\n'
                 print(csv_data)
-                with open('joint_data.txt', 'w') as text_file:
-                    text_file.write(csv_data)
-                
+                '''
+                if write_count%150==0:
+                    write_count = 1
+                    with open('joint_data.txt', 'w') as text_file: 
+                        print('writing')    
+                        text_file.write(csv_data)
+                '''
                 '''
                 requests.get(api_url)
                 response = requests.post(api_url, csv_data)
@@ -312,7 +318,7 @@ try:
             # Show images
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', color_image)
-        
+            write_count+=1
             cv2.waitKey(1)
 
 finally:
