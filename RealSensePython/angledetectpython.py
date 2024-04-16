@@ -163,7 +163,7 @@ lower_teal = np.array([81, 70, 20])
 upper_teal = np.array([100, 255, 255])
 
 #ex: http://www.exampledomain.com:8080
-api_url = input("Enter API url for data transmission")
+api_url = input("Enter API url for data transmission: ")
 
 try:
     
