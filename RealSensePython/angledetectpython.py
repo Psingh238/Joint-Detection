@@ -172,6 +172,7 @@ try:
         # Take time for later comparison
         start_time = time.time()
         write_count = 1
+        ratio = -1.0
         while True:        
                             
             # Wait for a coherent pair of frames: depth and color
@@ -251,7 +252,7 @@ try:
             if len(fpd.full_dict) == 18 and colors_found:
                 
                 # Figure out conversion ratio
-                ratio = -1.0
+                
                 if(ratio == -1.0):
                     ratio = conversion_ratio(fpd.full_dict, depth_colormap_dim, depth_frame)
                 
