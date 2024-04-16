@@ -292,20 +292,12 @@ try:
                         text_file.write(csv_data)
                 '''
                 '''
-                requests.get(api_url)
-                response = requests.post(api_url, csv_data)
-                print(response.status_code)
-                print(response.text)
-                
                 with open('pose_data.csv', 'w') as csvfile:    
                     writer = csv.DictWriter(csvfile, fieldnames=data_info)
                     writer.writeheader()
                     writer.writerows(fpd.full_dict)
-                requests.get(api_url)
-                time.sleep(10)
                 with open('pose_data.csv', mode='rb') as file:
                     response = requests.post(api_url, files={'pose_data.csv': file})
-                time.sleep(10)
                 '''
             
             #angle = elbow_angle(center_green, center_pink, center_orange)
