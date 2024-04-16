@@ -150,17 +150,17 @@ sensor.set_option(rs.option.exposure, 42000)
 lower_red = np.array([168, 100, 100])
 upper_red = np.array([179, 255,255])
 #upper mid torso [1]
-lower_blue = np.array([90,100,100])
+lower_blue = np.array([101,100,100])
 upper_blue = np.array([140, 255, 255])
 #right mid shoulder [3]
 lower_pink = np.array([140, 100, 100])
 upper_pink = np.array([170, 255, 255])
 #left mid shoulder [7]
-lower_green = np.array([40, 70, 70])
+lower_green = np.array([40, 60, 20])
 upper_green = np.array([80, 255, 255])
 #neck base [17]
-lower_orange = np.array([0, 70, 70])
-upper_orange = np.array([30, 255, 255])
+lower_teal = np.array([81, 70, 20])
+upper_teal = np.array([100, 255, 255])
 
 #ex: http://www.exampledomain.com:8080
 api_url = input("Enter API url for data transmission")
@@ -216,21 +216,21 @@ try:
             mask_red = cv2.inRange(hsv_image, lower_red, upper_red)
             mask_blue = cv2.inRange(hsv_image, lower_blue, upper_blue)
             mask_pink = cv2.inRange(hsv_image, lower_pink, upper_pink)
-            mask_orange = cv2.inRange(hsv_image, lower_orange, upper_orange)
+            mask_teal = cv2.inRange(hsv_image, lower_teal, upper_teal)
             mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
         
             # These functions update the mask and add a blur to them to reduce jittering
             mask_red = cv2.medianBlur(mask_red, 3)
             mask_blue = cv2.medianBlur(mask_blue, 3)
             mask_pink = cv2.medianBlur(mask_pink, 3)
-            mask_orange = cv2.medianBlur(mask_orange, 3)
+            mask_teal = cv2.medianBlur(mask_teal, 3)
             mask_green = cv2.medianBlur(mask_green, 3)
             
             # Here, all the contours are calculated from the masks
             contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_pink, _ = cv2.findContours(mask_pink, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours_orange, _ = cv2.findContours(mask_orange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_teal, _ = cv2.findContours(mask_teal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
             # The functions draw an appropriately colored rectange and also returns 3D coordinates crossed
@@ -238,10 +238,10 @@ try:
             center_red = draw_bound_box((0, 0, 255), contours_red, color_image, depth_frame)
             center_blue = draw_bound_box((255, 0, 0), contours_blue, color_image, depth_frame)
             center_pink = draw_bound_box((203, 192, 255), contours_pink, color_image, depth_frame)
-            center_orange = draw_bound_box((0, 165, 255), contours_orange, color_image, depth_frame)
+            center_teal = draw_bound_box((128, 128, 0), contours_teal, color_image, depth_frame)
             center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
             
-            center_list = [center_red, center_blue, center_pink, center_green, center_orange]
+            center_list = [center_red, center_blue, center_pink, center_green, center_teal]
             
             
             colors_found = True
@@ -285,13 +285,13 @@ try:
                     csv_data += ','.join(map(str, marker))
                     csv_data += '\r\n'
                 print(csv_data)
-                '''
+                
                 if write_count%150==0:
                     write_count = 1
                     with open('joint_data.txt', 'w') as text_file: 
                         print('writing')    
                         text_file.write(csv_data)
-                '''
+                
                 '''
                 with open('pose_data.csv', 'w') as csvfile:    
                     writer = csv.DictWriter(csvfile, fieldnames=data_info)
