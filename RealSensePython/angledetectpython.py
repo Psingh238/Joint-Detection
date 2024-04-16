@@ -47,8 +47,8 @@ def conversion_ratio(full_pose_dict, image_dim, depth_frame):
 
 def normalize_coords(color_marker_list, image_dim):
     for color_marker in color_marker_list:
-        color_marker[0] = float(color_marker[0] / image_dim[0])
-        color_marker[1] = float(color_marker[1] / image_dim[1])
+        color_marker[0] = float(color_marker[0] / image_dim[1])
+        color_marker[1] = float(color_marker[1] / image_dim[0])
     
     return color_marker_list
 
@@ -69,8 +69,8 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
     
     if(largest_contour_index_color != -1):
         x, y, w, h = cv2.boundingRect(color_contour[largest_contour_index_color])
-        cv2.rectangle(color_image, (x, y),(x+w, y+h),color,2)
         
+        cv2.circle(color_image, (x+(w/2),y+(h/2)), 10, color, 2)
         color_depth = rs.depth_frame.get_distance(d_frame, int(x+(w/2)), int(y+(h/2)))
         center_color = [float(x+(w/2)),float(y+(h/2)), color_depth]
         cv2.drawMarker(color_image, (int(center_color[0]), int(center_color[1])), color, cv2.MARKER_CROSS, 20, 3)
@@ -282,6 +282,9 @@ try:
                     csv_data += ','.join(map(str, marker))
                     csv_data += '\r\n'
                 print(csv_data)
+                with open('joint_data.txt', 'w') as text_file:
+                    text_file.write(csv_data)
+                
                 '''
                 with open('pose_data.csv', 'w') as csvfile:    
                     writer = csv.DictWriter(csvfile, fieldnames=data_info)
