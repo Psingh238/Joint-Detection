@@ -270,7 +270,7 @@ try:
                             'z': -(center_list[color_index][1])
                         }
                         '''
-                        pose_dict = [marker, center_list[color_index][2], center_list[color_index][0] * ratio, -(center_list[color_index][1])]
+                        pose_dict = [marker, center_list[color_index][2]*ratio, center_list[color_index][0], -(center_list[color_index][1])]
                         fpd.full_dict[marker] = pose_dict
             
             #transmits data
