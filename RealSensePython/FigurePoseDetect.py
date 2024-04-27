@@ -84,7 +84,7 @@ class FigurePoseDetect:
                         'z': -(mp_landmarks[val].y)
                         }
                     '''
-                    pose_dict = [index, mp_landmarks[val].x, mp_landmarks[val].y, mp_landmarks[val].z]
+                    pose_dict = [index, mp_landmarks[val].x, mp_landmarks[val].z, -(mp_landmarks[val].y)]
                     full_dict.append(pose_dict)
                 
                 index += 1

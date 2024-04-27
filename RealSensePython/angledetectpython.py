@@ -17,14 +17,16 @@ import socket
 
 # Function definitions
 
-# Function to calculate the necessary conversion ratio between real-life meter measurements and MediaPipe values
-# pre: MediaPipe has calculated keypoints and the pose dict is populated with values
+# Function to calculate the necessary conversion ratio between real-life meter measurements and MediaPipe meter depth values
+# pre: MediaPipe has calculated keypoints and the pose dict is populated with normalized coordinates
+#      
 
-def conversion_ratio(full_pose_dict, image_dim, depth_frame):
+def conversion_ratio(full_pose_dict, world_landmarks, image_dim, depth_frame):
+    # Get both normalized and world landmarks for the left shoulder
     left_shoulder = full_pose_dict[8]
-    print(left_shoulder)
+    left_shoulder_world = world_landmarks[8]
+    
     # Prior coordinate translation needs to be reversed
-    left_shoulder_depth = left_shoulder[2]
     left_shoulder_imageX = left_shoulder[1]
     left_shoulder_imageY = -left_shoulder[3]
 
@@ -34,7 +36,9 @@ def conversion_ratio(full_pose_dict, image_dim, depth_frame):
     while real_depth<=0.0:
        real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
         
-    return left_shoulder_depth / real_depth
+    # This ratio is a ratio such that multiplying the RealSense depth value with this ratio would
+    # return the depth that MediaPipe has used for all the other landmarks   
+    return  left_shoulder_world[2] / real_depth
 
 
 # Function to normalize the x and y coordinates of the color markers similar to MediaPipe Model
