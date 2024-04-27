@@ -5,20 +5,14 @@
 ##       OpenCV and Numpy integration        ##
 ###############################################
 
-from multiprocessing import Value
 import time
 import pyrealsense2 as rs
 import numpy as np
 import cv2
 import math
 import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 import FigurePoseDetect
-import msvcrt
-import csv
-import requests
-import time
+import socket
 
 
 # Function definitions
@@ -30,8 +24,8 @@ def conversion_ratio(full_pose_dict, image_dim, depth_frame):
     left_shoulder = full_pose_dict[8]
     print(left_shoulder)
     # Prior coordinate translation needs to be reversed
-    left_shoulder_depth = left_shoulder[1]
-    left_shoulder_imageX = left_shoulder[2]
+    left_shoulder_depth = left_shoulder[2]
+    left_shoulder_imageX = left_shoulder[1]
     left_shoulder_imageY = -left_shoulder[3]
 
     # The ratio returned is simply the MediaPipe depth at a certain keypoint compared with the actual depth in meters.
@@ -121,7 +115,8 @@ pipeline = rs.pipeline()
 config = rs.config()
 
 # Create figure pose detection object to easily access common functions
-fpd = FigurePoseDetect.FigurePoseDetect()        
+fpd = FigurePoseDetect.FigurePoseDetect()
+
 
 # Get device product line for setting a supporting resolution
 pipeline_wrapper = rs.pipeline_wrapper(pipeline)
@@ -165,6 +160,17 @@ upper_teal = np.array([100, 255, 255])
 #ex: http://www.exampledomain.com:8080
 api_url = input("Enter API URL for data transmission: ")
 
+# Parse API URL into hostname and port number
+parts = api_url.split(':')
+hostname = parts[0]
+port_num = int(parts[1])
+
+print(hostname, port_num)
+'''
+# configure client socket
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect((hostname, port_num))
+'''
 try:
     
     with fpd.PoseLandmarker.create_from_options(fpd.options) as landmarker:
@@ -252,10 +258,21 @@ try:
             if len(fpd.full_dict) == 18 and colors_found:
                 
                 # Figure out conversion ratio
-                
+                """
                 if(ratio == -1.0):
                     ratio = conversion_ratio(fpd.full_dict, depth_colormap_dim, depth_frame)
-                
+                """
+                '''
+                for marker in range(len(fpd.full_dict)):
+                    marker_depth = rs.depth_frame.get_distance(depth_frame, int(fpd.full_dict[marker][0]*640), int(-(fpd.full_dict[marker][3])*480))
+                    
+                    if(fpd.full_dict[marker][2]>10*ratio*marker_depth) and fpd.full_dict[marker][2]>0:
+                        fpd.full_dict[marker][2] = ratio*marker_depth
+                    elif(fpd.full_dict[marker][2]<10*ratio*marker_depth) and fpd.full_dict[marker][2]<0:
+                        fpd.full_dict[marker][2] = ratio*marker_depth
+                    else:
+                        continue
+                '''     
                 # normalize color coordinates
                 center_list = normalize_coords(center_list, color_colormap_dim)
                 
@@ -271,7 +288,7 @@ try:
                             'z': -(center_list[color_index][1])
                         }
                         '''
-                        pose_dict = [marker, center_list[color_index][2]*ratio, center_list[color_index][0], -(center_list[color_index][1])]
+                        pose_dict = [marker, center_list[color_index][0], center_list[color_index][2], -(center_list[color_index][1])]
                         fpd.full_dict[marker] = pose_dict
             
             #transmits data
@@ -284,6 +301,7 @@ try:
                 for marker in fpd.full_dict:
                     csv_data += ','.join(map(str, marker))
                     csv_data += '\r\n'
+                #client_socket.sendall(csv_data.encode())
                 print(csv_data)
                 
                 if write_count%150==0:
@@ -291,18 +309,9 @@ try:
                     with open('joint_data.txt', 'w') as text_file: 
                         print('writing')    
                         text_file.write(csv_data)
-                
-                '''
-                with open('pose_data.csv', 'w') as csvfile:    
-                    writer = csv.DictWriter(csvfile, fieldnames=data_info)
-                    writer.writeheader()
-                    writer.writerows(fpd.full_dict)
-                with open('pose_data.csv', mode='rb') as file:
-                    response = requests.post(api_url, files={'pose_data.csv': file})
-                '''
             
             #angle = elbow_angle(center_green, center_pink, center_orange)
-        
+            
             if len(fpd.annotated_image) != 0:
                 #dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
                 cv2.imshow('Mediapipe', fpd.annotated_image)
@@ -315,6 +324,8 @@ try:
             cv2.waitKey(1)
 
 finally:
-
+    # Send stop code to server to signal to it that all requests are handled and close client socket
+    #client_socket.sendall(b'\0')
+    #client_socket.close()
     # Stop streaming
     pipeline.stop()

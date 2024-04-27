@@ -7,6 +7,7 @@ from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
+import requests
 
 class FigurePoseDetect:
         
@@ -22,13 +23,13 @@ class FigurePoseDetect:
         self.PoseLandmarkerResult = vision.PoseLandmarkerResult
         self.annotated_image = []
         self.full_dict = []
-        self.pose_remap = [-1, -2, 0, -3, 12, 14, 16, -4, 11, 13, 15, 24, 26, 28, 23, 25, 27, -5]
+        
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
             running_mode=VisionRunningMode.LIVE_STREAM, 
             min_pose_detection_confidence=0.70,
-            min_tracking_confidence=0.80,
+            min_tracking_confidence=0.90,
             result_callback=self.print_result)
 
     # function to return annotated image with pose landmarks on the figure given the result
@@ -58,7 +59,7 @@ class FigurePoseDetect:
     def __remap_landmarks(self, landmark_result):
         full_dict = []
         pose_dict = None
-        mp_landmarks_list = landmark_result.pose_landmarks
+        mp_landmarks_list = landmark_result.pose_world_landmarks
         index = 0
         if len(mp_landmarks_list):
             mp_landmarks = mp_landmarks_list[0]
@@ -83,7 +84,7 @@ class FigurePoseDetect:
                         'z': -(mp_landmarks[val].y)
                         }
                     '''
-                    pose_dict = [index, mp_landmarks[val].z, mp_landmarks[val].x, -(mp_landmarks[val].y)]
+                    pose_dict = [index, mp_landmarks[val].x, mp_landmarks[val].y, mp_landmarks[val].z]
                     full_dict.append(pose_dict)
                 
                 index += 1
