@@ -23,7 +23,7 @@ class FigurePoseDetect:
         self.PoseLandmarkerResult = vision.PoseLandmarkerResult
         self.annotated_image = []
         self.full_dict = []
-        
+        self.full_norm_dict = []
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
@@ -58,11 +58,15 @@ class FigurePoseDetect:
     # Pre: pose_landmarks would be valid due to location of function call
     def __remap_landmarks(self, landmark_result):
         full_dict = []
+        full_norm_dict = []
         pose_dict = None
+        pose_norm_dict = None
         mp_landmarks_list = landmark_result.pose_world_landmarks
+        mp_norm_landmarks_list = landmark_result.pose_landmarks
         index = 0
         if len(mp_landmarks_list):
             mp_landmarks = mp_landmarks_list[0]
+            mp_norm_landmarks = mp_norm_landmarks_list[0]
             for val in FigurePoseDetect.pose_remap:
                 if val < 0:
                     '''
@@ -74,7 +78,9 @@ class FigurePoseDetect:
                         }
                     '''
                     pose_dict = [index, 0.0, 0.0, 0.0]
+                    pose_norm_dict = [index, 0.0, 0.0, 0.0]
                     full_dict.append(pose_dict)
+                    full_norm_dict = pose_norm_dict
                 else:
                     '''    
                     pose_dict = {
@@ -85,11 +91,13 @@ class FigurePoseDetect:
                         }
                     '''
                     pose_dict = [index, mp_landmarks[val].x, mp_landmarks[val].z, -(mp_landmarks[val].y)]
+                    pose_norm_dict = [index, mp_norm_landmarks[val].x, mp_norm_landmarks[val].z, -(mp_landmarks[val].y)]
                     full_dict.append(pose_dict)
+                    full_norm_dict.append(pose_norm_dict)
                 
                 index += 1
         
-        return full_dict
+        return full_dict, full_norm_dict
 
 
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
@@ -99,7 +107,7 @@ class FigurePoseDetect:
         # This ensures list indexing is successful
         if len(landmarks) != 0:
             
-            self.full_dict = self.__remap_landmarks(result)
+            self.full_dict, self.full_norm_dict = self.__remap_landmarks(result)
             left_shoulder = landmarks[0][11]
             
             if msvcrt.kbhit() and msvcrt.getche() == b'p':

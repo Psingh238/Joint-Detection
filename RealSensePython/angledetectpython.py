@@ -262,10 +262,10 @@ try:
             if len(fpd.full_dict) == 18 and colors_found:
                 
                 # Figure out conversion ratio
-                """
+                
                 if(ratio == -1.0):
-                    ratio = conversion_ratio(fpd.full_dict, depth_colormap_dim, depth_frame)
-                """
+                    ratio = conversion_ratio(fpd.full_dict, fpd.full_norm_dict, depth_colormap_dim, depth_frame)
+                
                 '''
                 for marker in range(len(fpd.full_dict)):
                     marker_depth = rs.depth_frame.get_distance(depth_frame, int(fpd.full_dict[marker][0]*640), int(-(fpd.full_dict[marker][3])*480))
@@ -276,7 +276,7 @@ try:
                         fpd.full_dict[marker][2] = ratio*marker_depth
                     else:
                         continue
-                '''     
+                '''  
                 # normalize color coordinates
                 center_list = normalize_coords(center_list, color_colormap_dim)
                 
@@ -292,7 +292,7 @@ try:
                             'z': -(center_list[color_index][1])
                         }
                         '''
-                        pose_dict = [marker, center_list[color_index][0], center_list[color_index][2], -(center_list[color_index][1])]
+                        pose_dict = [marker, center_list[color_index][0], center_list[color_index][2]*ratio, -(center_list[color_index][1])]
                         fpd.full_dict[marker] = pose_dict
             
             #transmits data
