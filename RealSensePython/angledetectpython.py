@@ -34,11 +34,42 @@ def conversion_ratio(full_pose_dict, world_landmarks, image_dim, depth_frame):
     real_depth = 0.0
     
     while real_depth<=0.0:
-       real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
+       try:
+           real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
+       except:
+           left_shoulder_imageY += 0.05
         
     # This ratio is a ratio such that multiplying the RealSense depth value with this ratio would
     # return the depth that MediaPipe has used for all the other landmarks   
     return  left_shoulder_world[2] / real_depth
+
+
+# Function to remap the color markers into the same ranges as the MediaPipe world landmarker
+# pre: color_marker_list is a list containing centers of the color markers normalized with respect to the image dimensions
+
+def remap_ranges(color_marker_list, full_pose_norm_dict, full_pose_world_dict):
+    # Get coordinate data for both shoulders and one hip point in both dicts
+    left_shoulder_norm = full_pose_norm_dict[8]
+    left_shoulder_world = full_pose_world_dict[8]
+    
+    right_shoulder_norm = full_pose_norm_dict[4]
+    right_shoulder_world = full_pose_world_dict[4]
+    
+    left_hip_norm = full_pose_norm_dict[14]
+    left_hip_world = full_pose_world_dict[14]
+    
+    og_y = color_marker_list[0][0]
+
+    # remap the x-values for each color marker
+    for marker in color_marker_list:
+        marker[0] = right_shoulder_world[1] + (left_shoulder_world[1] + right_shoulder_world[1]) * (marker[0] - right_shoulder_norm[1]) / (left_shoulder_norm[1] - right_shoulder_norm[1])
+    
+    # remap the y-values for each color marker
+    color_marker_list[0][1] = -left_hip_world[3] + ((-left_hip_norm[3]) + (-left_hip_world[3])) * (color_marker_list[0][1] - (-left_shoulder_norm[3])) / ((-left_hip_norm[3]) - (-left_shoulder_norm[3]))
+
+    print(f'Original y is {og_y}, left shoulder ynorm is {-left_shoulder_norm[3]}')
+    print(f'New y is {color_marker_list[0][1]}, left shoulder yworld is {-left_shoulder_world[3]}')
+    print(f'Left hip yworld is {-left_hip_world[3]}')
 
 
 # Function to normalize the x and y coordinates of the color markers similar to MediaPipe Model
@@ -298,6 +329,9 @@ try:
             #transmits data
             
             if colors_found and (len(fpd.annotated_image) != 0):
+                
+                remap_ranges(center_list, fpd.full_norm_dict, fpd.full_dict)
+                
                 #transmit data
                 print("transmitting")
                 data_info = ['marker', 'x', 'y', 'z']
@@ -306,7 +340,7 @@ try:
                     csv_data += ','.join(map(str, marker))
                     csv_data += '\r\n'
                 #client_socket.sendall(csv_data.encode())
-                print(csv_data)
+                #print(csv_data)
                 
                 if write_count%150==0:
                     write_count = 1
