@@ -80,7 +80,7 @@ class FigurePoseDetect:
                     pose_dict = [index, 0.0, 0.0, 0.0]
                     pose_norm_dict = [index, 0.0, 0.0, 0.0]
                     full_dict.append(pose_dict)
-                    full_norm_dict = pose_norm_dict
+                    full_norm_dict.append(pose_norm_dict)
                 else:
                     '''    
                     pose_dict = {
@@ -91,7 +91,7 @@ class FigurePoseDetect:
                         }
                     '''
                     pose_dict = [index, mp_landmarks[val].x, mp_landmarks[val].z, -(mp_landmarks[val].y)]
-                    pose_norm_dict = [index, mp_norm_landmarks[val].x, mp_norm_landmarks[val].z, -(mp_landmarks[val].y)]
+                    pose_norm_dict = [index, mp_norm_landmarks[val].x, mp_norm_landmarks[val].z, -(mp_norm_landmarks[val].y)]
                     full_dict.append(pose_dict)
                     full_norm_dict.append(pose_norm_dict)
                 

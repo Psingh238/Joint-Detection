@@ -40,8 +40,15 @@ def conversion_ratio(full_pose_dict, world_landmarks, image_dim, depth_frame):
     # return the depth that MediaPipe has used for all the other landmarks   
     return  left_shoulder_world[2] / real_depth
 
-
-# Function to normalize the x and y coordinates of the color markers similar to MediaPipe Model
+#calculate ratio between normalized and world mediapipe landmarks to translate normalized color joint positions to real world x and y data points
+def ratio_norm_real(full_pose_dict, world_landmarks):
+    left_shoulder = full_pose_dict[8]
+    left_shoulder_world = world_landmarks[8]
+    ratio_y = left_shoulder_world[3]/left_shoulder[3]
+    ratio_x = left_shoulder_world[1]/left_shoulder[1]
+    return ratio_x, ratio_y
+    
+# Function to normalize the x and y coordinates of the color markers similar to MediaPipe Model normalized landmarks
 
 def normalize_coords(color_marker_list, image_dim):
     for color_marker in color_marker_list:
@@ -182,7 +189,8 @@ try:
         # Take time for later comparison
         start_time = time.time()
         write_count = 1
-        ratio = -1.0
+        depth_ratio = -1.0
+        
         while True:        
                             
             # Wait for a coherent pair of frames: depth and color
@@ -251,6 +259,7 @@ try:
             center_teal = draw_bound_box((128, 128, 0), contours_teal, color_image, depth_frame)
             center_green = draw_bound_box((0, 255, 0), contours_green, color_image, depth_frame)
             
+            
             center_list = [center_red, center_blue, center_pink, center_green, center_teal]
             
             
@@ -262,9 +271,23 @@ try:
             if len(fpd.full_dict) == 18 and colors_found:
                 
                 # Figure out conversion ratio
+                # teal marker
+                center_list[4][0] = (fpd.full_dict[8][1]+fpd.full_dict[4][1])/2
+                center_list[4][1] = ((-fpd.full_dict[8][3])+(-fpd.full_dict[4][3]))/2
+                print(center_list[4][1])
+                #pink marker
+                center_list[3][0] = (fpd.full_dict[8][1]+center_list[4][0])/2
+                center_list[3][1] = ((-fpd.full_dict[8][3])+(center_list[4][1]))/2
+                #green marker
+                center_list[2][0] = (fpd.full_dict[4][1]+center_list[4][0])/2
+                center_list[2][1] = ((-fpd.full_dict[4][3])+(center_list[4][1]))/2
+                #red marker
+                center_list[0][0] = (center_list[4][0]+((fpd.full_dict[8][1]+fpd.full_dict[4][1])/2))/2
+                center_list[0][1] = center_list[4][1]/3
+                #blue marker
+                center_list[1][0] = (center_list[4][0]+center_list[0][0])/2
+                center_list[1][1] = 2*(center_list[4][1]/3)
                 
-                if(ratio == -1.0):
-                    ratio = conversion_ratio(fpd.full_dict, fpd.full_norm_dict, depth_colormap_dim, depth_frame)
                 
                 '''
                 for marker in range(len(fpd.full_dict)):
@@ -277,9 +300,13 @@ try:
                     else:
                         continue
                 '''  
-                # normalize color coordinates
-                center_list = normalize_coords(center_list, color_colormap_dim)
+                # normalize color depth coordinate
+                #center_list = normalize_coords(center_list, color_colormap_dim)
+                # normalize color x and y coordinates
+                if(depth_ratio == -1.0):
+                    depth_ratio = conversion_ratio(fpd.full_norm_dict, fpd.full_dict, depth_colormap_dim, depth_frame)
                 
+                    
                 for marker in range(len(fpd.pose_remap)):
                     if(fpd.pose_remap[marker] < 0):
 
@@ -292,7 +319,7 @@ try:
                             'z': -(center_list[color_index][1])
                         }
                         '''
-                        pose_dict = [marker, center_list[color_index][0], center_list[color_index][2]*ratio, -(center_list[color_index][1])]
+                        pose_dict = [marker, (center_list[color_index][0]), (center_list[color_index][2]), -(center_list[color_index][1])]
                         fpd.full_dict[marker] = pose_dict
             
             #transmits data
