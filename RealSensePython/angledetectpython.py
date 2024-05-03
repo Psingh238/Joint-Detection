@@ -58,18 +58,11 @@ def remap_ranges(color_marker_list, full_pose_norm_dict, full_pose_world_dict):
     left_hip_norm = full_pose_norm_dict[14]
     left_hip_world = full_pose_world_dict[14]
     
-    og_y = color_marker_list[0][0]
-
-    # remap the x-values for each color marker
+    # remap the x and y values for each color marker
     for marker in color_marker_list:
-        marker[0] = right_shoulder_world[1] + (left_shoulder_world[1] + right_shoulder_world[1]) * (marker[0] - right_shoulder_norm[1]) / (left_shoulder_norm[1] - right_shoulder_norm[1])
-    
-    # remap the y-values for each color marker
-    color_marker_list[0][1] = -left_hip_world[3] + ((-left_hip_norm[3]) + (-left_hip_world[3])) * (color_marker_list[0][1] - (-left_shoulder_norm[3])) / ((-left_hip_norm[3]) - (-left_shoulder_norm[3]))
+        marker[0] = right_shoulder_world[1] + (left_shoulder_world[1] - right_shoulder_world[1]) * (marker[0] - right_shoulder_norm[1]) / (left_shoulder_norm[1] - right_shoulder_norm[1])
+        marker[1] = -left_shoulder_world[3] + ((-left_hip_world[3]) - (-left_shoulder_world[3])) * (marker[1] - (-left_shoulder_norm[3])) / ((-left_hip_norm[3]) - (-left_shoulder_norm[3]))
 
-    print(f'Original y is {og_y}, left shoulder ynorm is {-left_shoulder_norm[3]}')
-    print(f'New y is {color_marker_list[0][1]}, left shoulder yworld is {-left_shoulder_world[3]}')
-    print(f'Left hip yworld is {-left_hip_world[3]}')
 
 
 # Function to normalize the x and y coordinates of the color markers similar to MediaPipe Model
@@ -292,6 +285,7 @@ try:
                 
             if len(fpd.full_dict) == 18 and colors_found:
                 
+                """
                 # Figure out conversion ratio
                 # teal marker
                 center_list[4][0] = (fpd.full_dict[8][1]+fpd.full_dict[4][1])/2
@@ -309,6 +303,7 @@ try:
                 #blue marker
                 center_list[1][0] = (center_list[4][0]+center_list[0][0])/2
                 center_list[1][1] = 2*(center_list[4][1]/3)
+                """
                 
                 if(ratio == -1.0):
                     ratio = conversion_ratio(fpd.full_dict, fpd.full_norm_dict, depth_colormap_dim, depth_frame)
@@ -326,6 +321,8 @@ try:
                 '''  
                 # normalize color coordinates
                 center_list = normalize_coords(center_list, color_colormap_dim)
+
+                remap_ranges(center_list, fpd.full_norm_dict, fpd.full_dict)
                 
                 for marker in range(len(fpd.pose_remap)):
                     if(fpd.pose_remap[marker] < 0):
@@ -339,14 +336,12 @@ try:
                             'z': -(center_list[color_index][1])
                         }
                         '''
-                        pose_dict = [marker, center_list[color_index][0], center_list[color_index][2]*ratio, -(center_list[color_index][1])]
+                        pose_dict = [marker, center_list[color_index][0], center_list[color_index][2]*ratio - 0.025, -(center_list[color_index][1])]
                         fpd.full_dict[marker] = pose_dict
             
             #transmits data
             
             if colors_found and (len(fpd.annotated_image) != 0):
-                
-                remap_ranges(center_list, fpd.full_norm_dict, fpd.full_dict)
                 
                 #transmit data
                 print("transmitting")
@@ -358,7 +353,7 @@ try:
                 #client_socket.sendall(csv_data.encode())
                 #print(csv_data)
                 
-                if write_count%150==0:
+                if write_count%50==0:
                     write_count = 1
                     with open('joint_data.txt', 'w') as text_file: 
                         print('writing')    
