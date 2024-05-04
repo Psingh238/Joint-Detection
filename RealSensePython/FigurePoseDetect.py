@@ -22,8 +22,8 @@ class FigurePoseDetect:
         PoseLandmarkerOptions = vision.PoseLandmarkerOptions
         self.PoseLandmarkerResult = vision.PoseLandmarkerResult
         self.annotated_image = []
-        self.full_dict = []
-        self.full_norm_dict = []
+        self.full_list = []
+        self.full_norm_list = []
         VisionRunningMode = vision.RunningMode
         self.options = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=model_path),
@@ -57,10 +57,10 @@ class FigurePoseDetect:
     # Also remaps to the proper coordinate system with z up
     # Pre: pose_landmarks would be valid due to location of function call
     def __remap_landmarks(self, landmark_result):
-        full_dict = []
-        full_norm_dict = []
-        pose_dict = None
-        pose_norm_dict = None
+        full_list = []
+        full_norm_list = []
+        pose_list = None
+        pose_norm_list = None
         mp_landmarks_list = landmark_result.pose_world_landmarks
         mp_norm_landmarks_list = landmark_result.pose_landmarks
         index = 0
@@ -77,10 +77,10 @@ class FigurePoseDetect:
                         'z': 0.0
                         }
                     '''
-                    pose_dict = [index, 0.0, 0.0, 0.0]
-                    pose_norm_dict = [index, 0.0, 0.0, 0.0]
-                    full_dict.append(pose_dict)
-                    full_norm_dict.append(pose_norm_dict)
+                    pose_list = [index, 0.0, 0.0, 0.0]
+                    pose_norm_list = [index, 0.0, 0.0, 0.0]
+                    full_list.append(pose_list)
+                    full_norm_list.append(pose_norm_list)
                 else:
                     '''    
                     pose_dict = {
@@ -90,14 +90,14 @@ class FigurePoseDetect:
                         'z': -(mp_landmarks[val].y)
                         }
                     '''
-                    pose_dict = [index, mp_landmarks[val].x, mp_landmarks[val].z, -(mp_landmarks[val].y)]
-                    pose_norm_dict = [index, mp_norm_landmarks[val].x, mp_norm_landmarks[val].z, -(mp_norm_landmarks[val].y)]
-                    full_dict.append(pose_dict)
-                    full_norm_dict.append(pose_norm_dict)
+                    pose_list = [index, mp_landmarks[val].x, mp_landmarks[val].z, -(mp_landmarks[val].y)]
+                    pose_norm_list = [index, mp_norm_landmarks[val].x, mp_norm_landmarks[val].z, -(mp_norm_landmarks[val].y)]
+                    full_list.append(pose_list)
+                    full_norm_list.append(pose_norm_list)
                 
                 index += 1
         
-        return full_dict, full_norm_dict
+        return full_list, full_norm_list
 
 
     def print_result(self, result: vision.PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
@@ -107,12 +107,10 @@ class FigurePoseDetect:
         # This ensures list indexing is successful
         if len(landmarks) != 0:
             
-            self.full_dict, self.full_norm_dict = self.__remap_landmarks(result)
+            self.full_list, self.full_norm_list = self.__remap_landmarks(result)
             left_shoulder = landmarks[0][11]
             
-            if msvcrt.kbhit() and msvcrt.getche() == b'p':
-                with open('test_joint_data.json', 'w') as file:
-                    json.dump(self.full_dict, file)
+            
                     
             # draw the pose on given image and return for access outside class
             self.annotated_image = self.draw_landmarks(result, output_image)

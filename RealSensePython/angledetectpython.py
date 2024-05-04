@@ -65,9 +65,10 @@ def remap_ranges(color_marker_list, full_pose_norm_dict, full_pose_world_dict):
 
 
 
-# Function to normalize the x and y coordinates of the color markers similar to MediaPipe Model
+# Function to normalize the x and y coordinates of the color markers similar to MediaPipe normalized landmarks
 
 def normalize_coords(color_marker_list, image_dim):
+    #normalization factor used for mediapipe normalized landmarkers are the image dimensions
     for color_marker in color_marker_list:
         color_marker[0] = float(color_marker[0] / image_dim[1])
         color_marker[1] = float(color_marker[1] / image_dim[0])
@@ -78,17 +79,20 @@ def normalize_coords(color_marker_list, image_dim):
 def draw_bound_box(color, color_contour, color_image, d_frame):
     max_area_color = -1
     largest_contour_index_color = -1
+    # size boundaries to not track objects too small or too big
     min_area = 50.0
     max_area = 300
+    #variable to store center point of color marker
     center_color = None
     for i in range (0, len(color_contour)):
         cnt = color_contour[i]
         
         area = cv2.contourArea(cnt)
+        # check to track largest presence of color in image capture that fits within the specified size bounds
         if(area > max_area_color and area > min_area and area < max_area):
             max_area_color = area
             largest_contour_index_color = i
-    
+    # if the color was found, modify the image stream to draw the marker of the respective color and identify the center of the marker
     if(largest_contour_index_color != -1):
         x, y, w, h = cv2.boundingRect(color_contour[largest_contour_index_color])
         
@@ -99,25 +103,7 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
     
     return center_color
 
-# Function used to calculate co-planar angle given 3 points in 3D space
-        
-def elbow_angle(forearm, joint, backarm):
-    
-    if(forearm != None and joint!=None and backarm!=None):
-        
-        forearm_joint = np.array([forearm[0]-joint[0], forearm[1]-joint[1], forearm[2]-joint[2]])
-        backarm_joint = np.array([backarm[0]-joint[0], backarm[1]-joint[1], backarm[2]-joint[2]])
-        
-        mag_forearm = get_magnitude(forearm_joint)
-        mag_backarm = get_magnitude(backarm_joint)
-        
-        
-        forearm_joint/=mag_forearm
-        backarm_joint/=mag_backarm
-        theta = math.acos(np.dot(forearm_joint, backarm_joint))
-        
-        return (theta*180)/math.pi
-    return -1
+
 
 # Helper function for calculating co-planar angle          
         
@@ -194,6 +180,7 @@ hostname = parts[0]
 port_num = int(parts[1])
 
 print(hostname, port_num)
+# configuring socket connection to server endpoint
 '''
 # configure client socket
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -236,6 +223,7 @@ try:
             color_colormap_dim = color_image.shape
             #color_image = normalize_color(color_image)
             
+            # correct image stream to reduce brightness
             hsv_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
             h, s, v = cv2.split(hsv_image)
             vlim = 30
@@ -277,67 +265,32 @@ try:
             
             center_list = [center_red, center_blue, center_pink, center_green, center_teal]
             
-            
+            # in order to make color data have the same units as mediapipe, all color tracked joint positions must be found
             colors_found = True
             for color in center_list:
                 if color == None:
                     colors_found = False
+            # checks if all joint positions were found (color and MediaPipe)    
+            if len(fpd.full_list) == 18 and colors_found:
                 
-            if len(fpd.full_dict) == 18 and colors_found:
                 
-                """
-                # Figure out conversion ratio
-                # teal marker
-                center_list[4][0] = (fpd.full_dict[8][1]+fpd.full_dict[4][1])/2
-                center_list[4][1] = ((-fpd.full_dict[8][3])+(-fpd.full_dict[4][3]))/2
-                print(center_list[4][1])
-                #pink marker
-                center_list[3][0] = (fpd.full_dict[8][1]+center_list[4][0])/2
-                center_list[3][1] = ((-fpd.full_dict[8][3])+(center_list[4][1]))/2
-                #green marker
-                center_list[2][0] = (fpd.full_dict[4][1]+center_list[4][0])/2
-                center_list[2][1] = ((-fpd.full_dict[4][3])+(center_list[4][1]))/2
-                #red marker
-                center_list[0][0] = (center_list[4][0]+((fpd.full_dict[8][1]+fpd.full_dict[4][1])/2))/2
-                center_list[0][1] = center_list[4][1]/3
-                #blue marker
-                center_list[1][0] = (center_list[4][0]+center_list[0][0])/2
-                center_list[1][1] = 2*(center_list[4][1]/3)
-                """
                 
                 if(ratio == -1.0):
-                    ratio = conversion_ratio(fpd.full_dict, fpd.full_norm_dict, depth_colormap_dim, depth_frame)
+                    ratio = conversion_ratio(fpd.full_list, fpd.full_norm_list, depth_colormap_dim, depth_frame)
                 
-                '''
-                for marker in range(len(fpd.full_dict)):
-                    marker_depth = rs.depth_frame.get_distance(depth_frame, int(fpd.full_dict[marker][0]*640), int(-(fpd.full_dict[marker][3])*480))
-                    
-                    if(fpd.full_dict[marker][2]>10*ratio*marker_depth) and fpd.full_dict[marker][2]>0:
-                        fpd.full_dict[marker][2] = ratio*marker_depth
-                    elif(fpd.full_dict[marker][2]<10*ratio*marker_depth) and fpd.full_dict[marker][2]<0:
-                        fpd.full_dict[marker][2] = ratio*marker_depth
-                    else:
-                        continue
-                '''  
+                
                 # normalize color coordinates
                 center_list = normalize_coords(center_list, color_colormap_dim)
-
-                remap_ranges(center_list, fpd.full_norm_dict, fpd.full_dict)
+                #remap to world landmark coordinate space
+                remap_ranges(center_list, fpd.full_norm_list, fpd.full_list)
                 
                 for marker in range(len(fpd.pose_remap)):
                     if(fpd.pose_remap[marker] < 0):
 
                         color_index = -(fpd.pose_remap[marker]) - 1
-                        '''
-                        pose_dict = {
-                            'marker': marker,
-                            'x': center_list[color_index][0],
-                            'y': center_list[color_index][2] * ratio,
-                            'z': -(center_list[color_index][1])
-                        }
-                        '''
+                        
                         pose_dict = [marker, center_list[color_index][0], center_list[color_index][2]*ratio - 0.025, -(center_list[color_index][1])]
-                        fpd.full_dict[marker] = pose_dict
+                        fpd.full_list[marker] = pose_dict
             
             #transmits data
             
@@ -347,7 +300,7 @@ try:
                 print("transmitting")
                 data_info = ['marker', 'x', 'y', 'z']
                 csv_data = ''
-                for marker in fpd.full_dict:
+                for marker in fpd.full_list:
                     csv_data += ','.join(map(str, marker))
                     csv_data += '\r\n'
                 #client_socket.sendall(csv_data.encode())
@@ -359,12 +312,12 @@ try:
                         print('writing')    
                         text_file.write(csv_data)
             
-            #angle = elbow_angle(center_green, center_pink, center_orange)
+            
             
             if len(fpd.annotated_image) != 0:
-                #dst = cv2.addWeighted(color_image, 1, fpd.annotated_image, 0.7, 0)
+                
                 cv2.imshow('Mediapipe', fpd.annotated_image)
-                #cv2.imshow('blended', dst)
+                
             
             # Show images
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
