@@ -6,6 +6,7 @@
 ###############################################
 
 import time
+import random
 import pyrealsense2 as rs
 import numpy as np
 import cv2
@@ -37,7 +38,9 @@ def conversion_ratio(full_pose_dict, world_landmarks, image_dim, depth_frame):
        try:
            real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
        except:
-           left_shoulder_imageY += 0.05
+           left_shoulder_imageY += random.uniform(-0.05, 0.05)
+           left_shoulder_imageX += random.uniform(-0.05, 0.05)
+           continue
         
     # This ratio is a ratio such that multiplying the RealSense depth value with this ratio would
     # return the depth that MediaPipe has used for all the other landmarks   
@@ -193,7 +196,7 @@ try:
         # Take time for later comparison
         start_time = time.time()
         write_count = 1
-        ratio = -1.0
+        ratio = -1
         while True:        
                             
             # Wait for a coherent pair of frames: depth and color
@@ -270,14 +273,12 @@ try:
             for color in center_list:
                 if color == None:
                     colors_found = False
+
             # checks if all joint positions were found (color and MediaPipe)    
             if len(fpd.full_list) == 18 and colors_found:
                 
-                
-                
-                if(ratio == -1.0):
+                if(ratio == -1):
                     ratio = conversion_ratio(fpd.full_list, fpd.full_norm_list, depth_colormap_dim, depth_frame)
-                
                 
                 # normalize color coordinates
                 center_list = normalize_coords(center_list, color_colormap_dim)
