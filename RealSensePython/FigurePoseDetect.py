@@ -109,9 +109,7 @@ class FigurePoseDetect:
             
             self.full_list, self.full_norm_list = self.__remap_landmarks(result)
             left_shoulder = landmarks[0][11]
-            
-            
-                    
+  
             # draw the pose on given image and return for access outside class
             self.annotated_image = self.draw_landmarks(result, output_image)
             self.annotated_image = cv2.circle(self.annotated_image,[int(left_shoulder.x * 640), int(left_shoulder.y * 480)],10,[0, 0, 255],5)

@@ -34,12 +34,13 @@ def conversion_ratio(full_pose_dict, world_landmarks, image_dim, depth_frame):
     # The ratio returned is simply the MediaPipe depth at a certain keypoint compared with the actual depth in meters.
     real_depth = 0.0
     
-    while real_depth<=0.0:
+    while real_depth <= 0.0:
        try:
            real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
-       except:
+       except Exception as e:
            left_shoulder_imageY += random.uniform(-0.05, 0.05)
            left_shoulder_imageX += random.uniform(-0.05, 0.05)
+           real_depth = -1.0
            continue
         
     # This ratio is a ratio such that multiplying the RealSense depth value with this ratio would
@@ -195,7 +196,8 @@ try:
         
         # Take time for later comparison
         start_time = time.time()
-        write_count = 1
+        write_count = 0
+        data = ''
         ratio = -1
         while True:        
                             
@@ -275,10 +277,12 @@ try:
                     colors_found = False
 
             # checks if all joint positions were found (color and MediaPipe)    
-            if len(fpd.full_list) == 18 and colors_found:
-                
+            if (len(fpd.full_list) == 18 and 
+                len(fpd.full_norm_list) == 18 and 
+                colors_found):
+
                 if(ratio == -1):
-                    ratio = conversion_ratio(fpd.full_list, fpd.full_norm_list, depth_colormap_dim, depth_frame)
+                    ratio = conversion_ratio(fpd.full_norm_list, fpd.full_list, depth_colormap_dim, depth_frame)
                 
                 # normalize color coordinates
                 center_list = normalize_coords(center_list, color_colormap_dim)
@@ -297,33 +301,28 @@ try:
             
             if colors_found and (len(fpd.annotated_image) != 0):
                 
+                write_count+=1
                 #transmit data
-                print("transmitting")
-                data_info = ['marker', 'x', 'y', 'z']
+                print(f"transmitting, data added. Write count: {write_count}")
                 csv_data = ''
                 for marker in fpd.full_list:
                     csv_data += ','.join(map(str, marker))
                     csv_data += '\r\n'
                 #client_socket.sendall(csv_data.encode())
                 #print(csv_data)
+                data += csv_data
                 
-                if write_count%50==0:
-                    write_count = 1
+                
+                if write_count == 50:
                     with open('joint_data.txt', 'w') as text_file: 
                         print('writing')    
-                        text_file.write(csv_data)
-            
-            
-            
-            if len(fpd.annotated_image) != 0:
-                
-                cv2.imshow('Mediapipe', fpd.annotated_image)
-                
-            
-            # Show images
+                        text_file.write(data)
+
+            # Show images            
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', color_image)
-            write_count+=1
+            if len(fpd.annotated_image):
+                cv2.imshow('Mediapipe', fpd.annotated_image)
             cv2.waitKey(1)
 
 finally:
