@@ -10,7 +10,8 @@ from mediapipe.framework.formats import landmark_pb2
 import requests
 
 class FigurePoseDetect:
-        
+    # list to identift which MediaPipe/Color tracked joint positions align with the reference model
+    # reference model joint positions are indicated by pose_remap index values    
     pose_remap = [-1, -2, 0, -3, 12, 14, 16, -4, 11, 13, 15, 24, 26, 28, 23, 25, 27, -5]
 
     def __init__(self):
@@ -61,13 +62,18 @@ class FigurePoseDetect:
         full_norm_list = []
         pose_list = None
         pose_norm_list = None
+        # World landmarks are predicted joint positions recorded in meters with regards to a central origin point
+        # These values are under the assumption that the tracked object (in this case the figure), is the size of a human
+        # As a result, the values produced are in scale with a human rather than the figure being measured
         mp_landmarks_list = landmark_result.pose_world_landmarks
         mp_norm_landmarks_list = landmark_result.pose_landmarks
         index = 0
         if len(mp_landmarks_list):
+            #as there are multiple predictions of pose stored in mp_landmarks_list, only the first prediction is chosed
             mp_landmarks = mp_landmarks_list[0]
             mp_norm_landmarks = mp_norm_landmarks_list[0]
             for val in FigurePoseDetect.pose_remap:
+                # If the joint position is tracked with color, initialize the data points to be 0
                 if val < 0:
                     '''
                     pose_dict = {
@@ -81,6 +87,7 @@ class FigurePoseDetect:
                     pose_norm_list = [index, 0.0, 0.0, 0.0]
                     full_list.append(pose_list)
                     full_norm_list.append(pose_norm_list)
+                # If not a color tracked joint position, add joint position data to the appropriate list
                 else:
                     '''    
                     pose_dict = {
@@ -90,7 +97,9 @@ class FigurePoseDetect:
                         'z': -(mp_landmarks[val].y)
                         }
                     '''
+                    # pose_list stores world landmark data (meters)
                     pose_list = [index, mp_landmarks[val].x, mp_landmarks[val].z, -(mp_landmarks[val].y)]
+                    # pose_norm_list stores normalized data
                     pose_norm_list = [index, mp_norm_landmarks[val].x, mp_norm_landmarks[val].z, -(mp_norm_landmarks[val].y)]
                     full_list.append(pose_list)
                     full_norm_list.append(pose_norm_list)
@@ -106,8 +115,9 @@ class FigurePoseDetect:
         # Ensure landmarks were actually returned or not
         # This ensures list indexing is successful
         if len(landmarks) != 0:
-            
+            #retrieve both world and normalized landmarks and store in object variables
             self.full_list, self.full_norm_list = self.__remap_landmarks(result)
+            #track left shoulder to indicate that user knows which direction mediapipe assumes the figure is facing
             left_shoulder = landmarks[0][11]
   
             # draw the pose on given image and return for access outside class
