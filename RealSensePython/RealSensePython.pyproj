@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>5b502155-a68d-453f-81fb-40e6f2770e0e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>angledetectpython.py</StartupFile>
+    <StartupFile>driver.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -40,7 +40,7 @@
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="angledetectpython.py" />
+    <Compile Include="driver.py" />
     <Compile Include="FigurePoseDetect.py" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
