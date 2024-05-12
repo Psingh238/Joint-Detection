@@ -101,7 +101,8 @@ Finally, the data will be remapped to match Boeing's coordinate system, where y 
 
 When capturing joint position data, this data will also be displayed to the user to show how the program is tracking the joint positions. This is mainly handled by OpenCV, where it will display two windows to the user, showing the color tracked and the MediaPipe tracked joint positions.
 
-<!---put image of the data here--->
+![image](https://github.com/Psingh238/RealSenseAngleDetection/assets/97202987/9994dcb4-f37c-4a3f-a8b8-cbbe6ffe0c07)
+
 ### Color Data display
 When displaying color tracked data, as highlighted before, several bounding boxes are created for each color tracked joint. These are overlaid on the image using the following code:
 ``` python
