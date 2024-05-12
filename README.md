@@ -17,3 +17,20 @@ lower_red = np.array([168, 100, 100])
 upper_red = np.array([179, 255,255])
 ```
 where the values are in the order of Hue, Saturation, Value.
+
+To retrieve coordinates using these masks, contours are first created capturing all instances of the specified color, which is defined as follows:
+```
+contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+```
+The program then finds the largest instance of the color and calculates the center of this instance based off of a bounding box super imposed over where the color is. The code to retrieve the center is as follows:
+```
+x, y, w, h = cv2.boundingRect(color_contour[largest_contour_index_color])
+
+cv2.circle(color_image, (int(x+(w/2)),int(y+(h/2))), 10, color, 2)
+color_depth = rs.depth_frame.get_distance(d_frame, int(x+(w/2)), int(y+(h/2)))
+center_color = [float(x+(w/2)),float(y+(h/2)), color_depth]
+cv2.drawMarker(color_image, (int(center_color[0]), int(center_color[1])), color, cv2.MARKER_CROSS, 20, 3)
+```
+
+## Tracking Joint Positions Through MediaPipe
+Tracking joint positions through MediaPipe uses a pretrained model developed by google to assume where key joint positions are. The joint positions provided include both normalized coordinates, where the x and y coordinates are pixel values normalized by the image width and length respectively. The other joint position format is world landmarks, which provides the distance from an origin point, the center of the hip, for the x, y, and z coordinates. In this program, both types of data format are utilized, with the normalized data being used for visuals and world landmark data being sent to the data retrieval program.
