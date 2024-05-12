@@ -75,28 +75,14 @@ class FigurePoseDetect:
             for val in FigurePoseDetect.pose_remap:
                 # If the joint position is tracked with color, initialize the data points to be 0
                 if val < 0:
-                    '''
-                    pose_dict = {
-                        'marker': index,
-                        'x': 0.0,
-                        'y': 0.0,
-                        'z': 0.0
-                        }
-                    '''
+                    
                     pose_list = [index, 0.0, 0.0, 0.0]
                     pose_norm_list = [index, 0.0, 0.0, 0.0]
                     full_list.append(pose_list)
                     full_norm_list.append(pose_norm_list)
                 # If not a color tracked joint position, add joint position data to the appropriate list
                 else:
-                    '''    
-                    pose_dict = {
-                        'marker': index,
-                        'x': mp_landmarks[val].z,
-                        'y': mp_landmarks[val].x,
-                        'z': -(mp_landmarks[val].y)
-                        }
-                    '''
+                    
                     # pose_list stores world landmark data (meters)
                     pose_list = [index, mp_landmarks[val].x, mp_landmarks[val].z, -(mp_landmarks[val].y)]
                     # pose_norm_list stores normalized data
