@@ -10,7 +10,6 @@ import random
 import pyrealsense2 as rs
 import numpy as np
 import cv2
-import math
 import mediapipe as mp
 import FigurePoseDetect
 import socket
@@ -38,6 +37,7 @@ def conversion_ratio(full_pose_dict, world_landmarks, image_dim, depth_frame):
        try:
            real_depth = rs.depth_frame.get_distance(depth_frame, int(left_shoulder_imageX * image_dim[1]), int(left_shoulder_imageY * image_dim[0]))
        except Exception as e:
+           # Shift the coordinate around by a random amount until the get_distancee functions works
            left_shoulder_imageY += random.uniform(-0.05, 0.05)
            left_shoulder_imageX += random.uniform(-0.05, 0.05)
            real_depth = -1.0
@@ -52,7 +52,10 @@ def conversion_ratio(full_pose_dict, world_landmarks, image_dim, depth_frame):
 # pre: color_marker_list is a list containing centers of the color markers normalized with respect to the image dimensions
 
 def remap_ranges(color_marker_list, full_pose_norm_dict, full_pose_world_dict):
+    
     # Get coordinate data for both shoulders and one hip point in both dicts
+    # Note: normalized landmarks are smaller when considering the right of the 3D printed figure and the top of the figure
+    # For the world landmarks, it is the same case; however, the y-origin is at the center of the hip instead.
     left_shoulder_norm = full_pose_norm_dict[8]
     left_shoulder_world = full_pose_world_dict[8]
     
@@ -62,12 +65,10 @@ def remap_ranges(color_marker_list, full_pose_norm_dict, full_pose_world_dict):
     left_hip_norm = full_pose_norm_dict[14]
     left_hip_world = full_pose_world_dict[14]
     
-    # remap the x and y values for each color marker
+    # remap the x and y values for each color marker using mapping functions
     for marker in color_marker_list:
         marker[0] = right_shoulder_world[1] + (left_shoulder_world[1] - right_shoulder_world[1]) * (marker[0] - right_shoulder_norm[1]) / (left_shoulder_norm[1] - right_shoulder_norm[1])
         marker[1] = -left_shoulder_world[3] + ((-left_hip_world[3]) - (-left_shoulder_world[3])) * (marker[1] - (-left_shoulder_norm[3])) / ((-left_hip_norm[3]) - (-left_shoulder_norm[3]))
-
-
 
 # Function to normalize the x and y coordinates of the color markers similar to MediaPipe normalized landmarks
 
@@ -88,6 +89,7 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
     max_area = 300
     #variable to store center point of color marker
     center_color = None
+    # go through all contours of the specific color
     for i in range (0, len(color_contour)):
         cnt = color_contour[i]
         
@@ -95,38 +97,25 @@ def draw_bound_box(color, color_contour, color_image, d_frame):
         # check to track largest presence of color in image capture that fits within the specified size bounds
         if(area > max_area_color and area > min_area and area < max_area):
             max_area_color = area
+            #track which contour has the largest area within the bounds stated before
+
             largest_contour_index_color = i
     # if the color was found, modify the image stream to draw the marker of the respective color and identify the center of the marker
     if(largest_contour_index_color != -1):
         x, y, w, h = cv2.boundingRect(color_contour[largest_contour_index_color])
+        # draw circle around the center in the image using the color being tracked
+        cv2.circle(color_image, (int(x + (w / 2)), int(y + (h / 2))), 10, color, 2)
         
-        cv2.circle(color_image, (int(x+(w/2)),int(y+(h/2))), 10, color, 2)
-        color_depth = rs.depth_frame.get_distance(d_frame, int(x+(w/2)), int(y+(h/2)))
-        center_color = [float(x+(w/2)),float(y+(h/2)), color_depth]
+        # poll depth using depth frame and xy coordinates of the circle
+        color_depth = rs.depth_frame.get_distance(d_frame, int(x + (w / 2)), int(y + (h / 2)))
+
+        # store all coordinate values in the list
+        center_color = [float(x + (w / 2)), float(y + (h / 2)), color_depth]
+        
+        #highlight the exact position of the color tracked joint position by drawing a cross of the same color
         cv2.drawMarker(color_image, (int(center_color[0]), int(center_color[1])), color, cv2.MARKER_CROSS, 20, 3)
     
     return center_color
-
-
-
-# Helper function for calculating co-planar angle          
-        
-def get_magnitude(vector):
-    x = vector[0]
-    y = vector[1]
-    z = vector[2]
-    return math.sqrt(pow(x, 2)+pow(y, 2)+pow(z, 2))
-
-# Function to normalize the lighting of the image
-
-def normalize_color(old_img):
-    lab = cv2.cvtColor(old_img, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    cl = clahe.apply(l)
-    limg = cv2.merge((cl, a, b))
-    enhanced_img = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
-    return enhanced_img
 
 # Configure depth and color streams
 pipeline = rs.pipeline()
@@ -142,12 +131,13 @@ pipeline_profile = config.resolve(pipeline_wrapper)
 device = pipeline_profile.get_device()
 device_product_line = str(device.get_info(rs.camera_info.product_line))
 
-config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+# Function inputs are: stream_type, width, height, data_format, frame_rate
+config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 60)
 
 if device_product_line == 'L500':
-    config.enable_stream(rs.stream.color, 960, 540, rs.format.bgr8, 30)
+    config.enable_stream(rs.stream.color, 960, 540, rs.format.bgr8, 60)
 else:
-    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
+    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 60)
 
 # Start streaming
 profile = pipeline.start(config)
@@ -175,29 +165,29 @@ upper_green = np.array([80, 255, 255])
 lower_teal = np.array([81, 70, 20])
 upper_teal = np.array([100, 255, 255])
 
-#ex: http://www.exampledomain.com:8080
-api_url = input("Enter API URL for data transmission: ")
+#ex: www.exampledomain.com:8080
+api_url = input("Enter API URL for data transmission (example: <hostname>:8080): ")
 
 # Parse API URL into hostname and port number
 parts = api_url.split(':')
 hostname = parts[0]
 port_num = int(parts[1])
 
-print(hostname, port_num)
 # configuring socket connection to server endpoint
-'''
-# configure client socket
+
+# configure client socket and connect to server
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect((hostname, port_num))
-'''
+
+# Print message to let user know how to exit the program
+print('Hit Ctrl + C to quit program')
+
 try:
     
     with fpd.PoseLandmarker.create_from_options(fpd.options) as landmarker:
         
         # Take time for later comparison
         start_time = time.time()
-        write_count = 0
-        data = ''
         ratio = -1
         while True:        
                             
@@ -205,6 +195,8 @@ try:
             frames = pipeline.wait_for_frames()
             depth_frame = frames.get_depth_frame()
             color_frame = frames.get_color_frame()
+            
+            # Loop around if both frames are not available
             if not depth_frame or not color_frame:
                 continue
 
@@ -224,9 +216,10 @@ try:
             # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
             depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
+            # Get dimensions of depth and color frame in format (height, width)
             depth_colormap_dim = depth_colormap.shape
             color_colormap_dim = color_image.shape
-            #color_image = normalize_color(color_image)
+            
             
             # correct image stream to reduce brightness
             hsv_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2HSV)
@@ -237,7 +230,7 @@ try:
             
             hsv_image = cv2.merge((h,s,v))
             color_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2BGR)
-            #hsv_image = normalize_color(hsv_image)
+            
         
             # These functions create the necessary masks for each color
             mask_red = cv2.inRange(hsv_image, lower_red, upper_red)
@@ -245,20 +238,19 @@ try:
             mask_pink = cv2.inRange(hsv_image, lower_pink, upper_pink)
             mask_teal = cv2.inRange(hsv_image, lower_teal, upper_teal)
             mask_green = cv2.inRange(hsv_image, lower_green, upper_green)
-        
-            # These functions update the mask and add a blur to them to reduce jittering
-            mask_red = cv2.medianBlur(mask_red, 3)
-            mask_blue = cv2.medianBlur(mask_blue, 3)
-            mask_pink = cv2.medianBlur(mask_pink, 3)
-            mask_teal = cv2.medianBlur(mask_teal, 3)
-            mask_green = cv2.medianBlur(mask_green, 3)
             
+            mask_list = [mask_red, mask_blue, mask_pink, mask_teal, mask_green]
+            
+            # These functions update the mask and add a blur to them to reduce jittering
+            for mask in mask_list:
+                mask = cv2.medianBlur(mask, 3)
+                
             # Here, all the contours are calculated from the masks
-            contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours_pink, _ = cv2.findContours(mask_pink, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours_teal, _ = cv2.findContours(mask_teal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_red, _ = cv2.findContours(mask_list[0], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_blue, _ = cv2.findContours(mask_list[1], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_pink, _ = cv2.findContours(mask_list[2], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_teal, _ = cv2.findContours(mask_list[3], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            contours_green, _ = cv2.findContours(mask_list[4], cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
             # The functions draw an appropriately colored rectange and also returns 3D coordinates crossed
             # between the 2D image coordinates the 3D depth data for the center of the rectangles
@@ -286,48 +278,48 @@ try:
                 
                 # normalize color coordinates
                 center_list = normalize_coords(center_list, color_colormap_dim)
-                #remap to world landmark coordinate space
-                remap_ranges(center_list, fpd.full_norm_list, fpd.full_list)
                 
+                # remap to world landmark coordinate space
+                remap_ranges(center_list, fpd.full_norm_list, fpd.full_list)
+                # go through list storing all joint positions
                 for marker in range(len(fpd.pose_remap)):
+                    # check if the joint position is a color tracked joint (marker is negative)
                     if(fpd.pose_remap[marker] < 0):
-
+                        # translate marker to where the color tracked joint data is located in center_list
                         color_index = -(fpd.pose_remap[marker]) - 1
-                        
+                        # Assign the appropriate joint position with the data stored in center list
+                        # when assigning, modify the depth value with the calculated ratio between the color and MediaPipe depth values
+                        # when assigning, also remap the coordinates so that y = z and z = -y to align with Boeing's coordinate system
                         pose_dict = [marker, center_list[color_index][0], center_list[color_index][2]*ratio - 0.025, -(center_list[color_index][1])]
                         fpd.full_list[marker] = pose_dict
             
-            #transmits data
-            
+            # Check whether all joint positions are found. If so, start data transmission
             if colors_found and (len(fpd.annotated_image) != 0):
                 
-                write_count+=1
-                #transmit data
-                print(f"transmitting, data added. Write count: {write_count}")
+                # notify user that data will be transmitted
+                print("Transmitting data")
                 csv_data = ''
+                
+                # convert the numerical data into strings and join them together using commas
+                # to create comma-separated values
                 for marker in fpd.full_list:
                     csv_data += ','.join(map(str, marker))
                     csv_data += '\r\n'
-                #client_socket.sendall(csv_data.encode())
-                #print(csv_data)
-                data += csv_data
                 
-                
-                if write_count == 50:
-                    with open('joint_data.txt', 'w') as text_file: 
-                        print('writing')    
-                        text_file.write(data)
+                # data is sent after encoding to the server. Uses default UTF-8 encoding
+                client_socket.sendall(csv_data.encode())
 
             # Show images            
             cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
             cv2.imshow('RealSense', color_image)
+            # If MediaPipe has tracked joints positions, display another image with overlaid MediaPipe joint positions
             if len(fpd.annotated_image):
                 cv2.imshow('Mediapipe', fpd.annotated_image)
             cv2.waitKey(1)
 
 finally:
     # Send stop code to server to signal to it that all requests are handled and close client socket
-    #client_socket.sendall(b'\0')
-    #client_socket.close()
+    client_socket.sendall(b'\0')
+    client_socket.close()
     # Stop streaming
     pipeline.stop()
