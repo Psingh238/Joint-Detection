@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <Name>RealSensePython</Name>
     <RootNamespace>RealSensePython</RootNamespace>
-    <InterpreterId>MSBuild|venv|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>Workspace|Workspace|venv</InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterPath>
     </InterpreterPath>
@@ -26,23 +26,15 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Interpreter Include="venv\">
-      <Id>venv</Id>
-      <Version>3.10</Version>
-      <Description>venv</Description>
-      <InterpreterPath>scripts\python.exe</InterpreterPath>
-      <WindowsInterpreterPath>scripts\pythonw.exe</WindowsInterpreterPath>
-      <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>
-      <Architecture>X64</Architecture>
-    </Interpreter>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="requirements.txt" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="driver.py" />
     <Compile Include="FigurePoseDetect.py" />
     <Compile Include="server.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Workspace|Workspace|venv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
