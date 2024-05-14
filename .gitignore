@@ -10,11 +10,12 @@
 *.userosscache
 *.sln.docstates
 
-# Python dist file
-RealSensePython/dist
+# Python dist and build folders
+./dist
+./build
 
 # Python venv
-RealSensePython/venv
+./venv
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -367,3 +368,4 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/venv
