@@ -11,8 +11,9 @@
 *.sln.docstates
 
 # Python dist and build folders
-./dist
-./build
+/dist/
+/build/
+*.spec
 
 # Python venv
 ./venv
