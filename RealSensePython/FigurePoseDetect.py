@@ -24,7 +24,7 @@ from mediapipe.framework.formats import landmark_pb2
 class FigurePoseDetect:
     # list to identify which MediaPipe/Color tracked joint positions align with the reference model
     # reference model joint positions are indicated by pose_remap index values    
-    pose_remap = [-1, -2, 0, -3, 12, 14, 16, -4, 11, 13, 15, 24, 26, 28, 23, 25, 27, -5]
+    pose_remap = [-1, -2, 0, -3, 12, 14, 16, -4, 11, 13, 15, 24, 26, 28, 23, 25, 27, -5, 19, 20, 31, 32]
 
     def __init__(self):
         model_path = 'pose_landmarker_heavy.task'

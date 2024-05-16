@@ -143,7 +143,7 @@ device_product_line = str(device.get_info(rs.camera_info.product_line))
 config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 60)
 
 if device_product_line == 'L500':
-    config.enable_stream(rs.stream.color, 960, 540, rs.format.bgr8, 60)
+    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 60)
 else:
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 60)
 
@@ -151,7 +151,7 @@ else:
 profile = pipeline.start(config)
 
 sensor = pipeline.get_active_profile().get_device().query_sensors()[0]
-sensor.set_option(rs.option.exposure, 42000)
+sensor.set_option(rs.option.exposure, 36000)
 
 # define lower and upper bounds for each color
 # These are organized as Hue, Saturation, and Value
@@ -277,8 +277,8 @@ try:
                     colors_found = False
 
             # checks if all joint positions were found (color and MediaPipe)    
-            if (len(fpd.full_list) == 18 and 
-                len(fpd.full_norm_list) == 18 and 
+            if (len(fpd.full_list) == 22 and 
+                len(fpd.full_norm_list) == 22 and 
                 colors_found):
 
                 if(ratio == -1):
@@ -315,6 +315,7 @@ try:
                     csv_data += '\r\n'
                 
                 # data is sent after encoding to the server. Uses default UTF-8 encoding
+                print(csv_data)
                 client_socket.sendall(csv_data.encode())
 
             # Show images            
@@ -327,6 +328,7 @@ try:
 
 finally:
     # Send stop code to server to signal to it that all requests are handled and close client socket
+
     client_socket.sendall(b'\0')
     client_socket.close()
     # Stop streaming
