@@ -11,11 +11,12 @@
     <OutputPath>.</OutputPath>
     <Name>RealSensePython</Name>
     <RootNamespace>RealSensePython</RootNamespace>
-    <InterpreterId>Workspace|Workspace|venv</InterpreterId>
+    <InterpreterId>Global|VisualStudio|venv</InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterPath>
     </InterpreterPath>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,7 +35,7 @@
     <Compile Include="server.py" />
   </ItemGroup>
   <ItemGroup>
-    <InterpreterReference Include="Workspace|Workspace|venv" />
+    <InterpreterReference Include="Global|VisualStudio|venv" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
