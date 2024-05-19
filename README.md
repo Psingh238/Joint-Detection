@@ -1,4 +1,4 @@
-# RealSenseAngleDetection
+# Joint-Detection
 
 ## Project Overview
 This project aims to capture pose of a small scale 3D figure utilizing both depth information polled from a depth camera as well as the MediaPipe machine learning model to predict key joint positions to fully capture pose.
