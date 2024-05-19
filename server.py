@@ -20,7 +20,7 @@ class DataHandler(socketserver.BaseRequestHandler):
     def setup(self):
         self.MARKER = b'\r\n'
         self.STOP_CODE = b'\0'
-        self.NUM_ROWS = 18
+        self.NUM_ROWS = 22
         
     def handle(self):
         
