@@ -4,7 +4,7 @@
 This project aims to capture pose of a small scale 3D figure utilizing both depth information polled from a depth camera as well as the MediaPipe machine learning model to predict key joint positions to fully capture pose.
 
 ## Setup Procedure
-Please download the most recent release of this program in the releases tab. This will be in the form of a .zip file that will need to be extracted on the computer. Once extracted, the user will need to click the .exe file present within the release to run the program. The Intel RealSense D405 depth camera will need to be connected to the computer for the program to run. 
+Please download the most recent release of this program in the releases tab. This will be in the form of a .zip file that will need to be extracted on the computer. Once extracted, the user will need to click the .exe file for starting the data retrieval program present within the release folder. The user should then click the joint tracking program .exe file. The Intel RealSense D405 depth camera will need to be connected to the computer for the program to run. 
 
 ## Joint Position data details
 The output of this program will produce 18 markers capturing the pose of the figure recorded in meters. These points are in reference to an origin point which is placed in between the hips. Each joint position will be denoted by a marker number when captured. These joint positions corroborate with the following reference model.
