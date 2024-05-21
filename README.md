@@ -1,4 +1,4 @@
-# RealSenseAngleDetection
+# Joint-Detection
 
 ## Project Overview
 This project aims to capture pose of a small scale 3D figure utilizing both depth information polled from a depth camera as well as the MediaPipe machine learning model to predict key joint positions to fully capture pose.
@@ -7,7 +7,7 @@ This project aims to capture pose of a small scale 3D figure utilizing both dept
 Please download the most recent release of this program in the releases tab. This will be in the form of a .zip file that will need to be extracted on the computer. Once extracted, the user will need to click the .exe file for starting the data retrieval program present within the release folder. The user should then click the joint tracking program .exe file. The Intel RealSense D405 depth camera will need to be connected to the computer for the program to run. 
 
 ## Joint Position data details
-The output of this program will produce 18 markers capturing the pose of the figure recorded in meters. These points are in reference to an origin point which is placed in between the hips. Each joint position will be denoted by a marker number when captured. These joint positions corroborate with the following reference model.
+The output of this program will produce 22 markers capturing the pose of the figure recorded in meters. These points are in reference to an origin point which is placed in between the hips. Each joint position will be denoted by a marker number when captured. These joint positions corroborate with the following reference model.
 
 ![image](https://github.com/Psingh238/RealSenseAngleDetection/assets/97202987/8644f00a-050b-4476-a6bc-83ceb10ef916)
 
@@ -133,7 +133,7 @@ The highlighted joint in this case is the left shoulder of the figure. By using 
 
 ## Data Transmission
 
-The joint position data is formatted as comma-separated value (CSV) strings where the data format is ``maker_num, x, y, z``. There are 18 rows of data, corresponding to the 18 markers on the reference model. These rows are separated using the ``\r\n`` escape characteers which are also used by the server code to reconstruct the data. A socket connection using TCP/IPv4 is used to send data from the joint tracking program to the server program on port 5000. Note that this port can be changed by changing the source code for the server. This is a real-time connection as the server can continuously parse the incoming data and display it on the console.
+The joint position data is formatted as comma-separated value (CSV) strings where the data format is ``maker_num, x, y, z``. There are 22 rows of data, corresponding to the 22 markers on the reference model. These rows are separated using the ``\r\n`` escape characteers which are also used by the server code to reconstruct the data. A socket connection using TCP/IPv4 is used to send data from the joint tracking program to the server program on port 5000. Note that this port can be changed by changing the source code for the server. This is a real-time connection as the server can continuously parse the incoming data and display it on the console.
 
 ### Client-side code
 
@@ -215,4 +215,4 @@ while not stop_flag:
     full_pose = []
 ```
 
-The server reads up to 1024 bytes of the data it receives through the client and then it goes into a loop to parse the data until all 18 rows are correctly identified and converted into a numerical format once more which can then be displayed to the console as a list. Furthermore, the entire process is repeated until the server detects the ``\0`` character which signals the end of transmission by the client. This allows the server to keep running and allow the client to disconnect and reconnect at any time.
+The server reads up to 1024 bytes of the data it receives through the client and then it goes into a loop to parse the data until all 22 rows are correctly identified and converted into a numerical format once more which can then be displayed to the console as a list. Furthermore, the entire process is repeated until the server detects the ``\0`` character which signals the end of transmission by the client. This allows the server to keep running and allow the client to disconnect and reconnect at any time.
