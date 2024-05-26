@@ -3,10 +3,37 @@
 ## Project Overview
 This project aims to capture pose of a small scale 3D figure utilizing both depth information polled from a depth camera as well as the MediaPipe machine learning model to predict key joint positions to fully capture pose.
 
-## Setup Procedure
+## Building From Source
+
+Please follow the following steps to build the project from the source code. Please also note the prerequisites.
+
+### Prerequisites
+
+- Python version 3.10.11 (it is highly probable that version 3.10.X in general would work)
+- Microsoft Visual Studio 2022 with Python development feature installed
+
+### Setting up the project in Visual Studio
+
+1. Use GitHub's "Open with Visual Studio" feature to open the project in Visual Studio.
+2. Create the Python virtual environment in the main folder using the following command in Windows Command Prompt: ``python -m venv venv``.
+3. Add the newly created virtual environment to the Visual Studio project by using Visual Studio's Python virtual environment window.
+4. Right-click on the virtual environment in the Visual Studio Solution Explorer and click on "install from requirements.txt."
+5. All required Python modules are now installed and changes can be made to the code as deemed necessary.
+
+### Compiling to EXE file
+
+1. Start the Python virtual environment in the Command Prompt by using the following command: ``venv\Scripts\activate``. This Command Prompt can be accessed using the integrated Command Prompt in Visual Studio.
+2. Install the Python module ``pyinstaller`` using the following command: ``pip install pyinstaller``.
+3. There will be two EXE files: the server and the joint tracking software.
+       - To compile the server.py into an EXE, run the following command: ``pyinstaller server.py``
+       - To compile the joint tracking software into an EXE, run the following command (note that the order of files matters): ``pyinstaller FigurePoseDetect.py driver.py``
+   The new EXE files will be available under the dist folder. For the joint tracking EXE to work correctly, the pose_landmarker_heavy.task file needs to be copied into the folder for the joint tracking software next to the associated EXE file.
+4. The new EXE files are now ready to be run.
+
+## Setup Procedure For Directly Using EXE Files
 Please download the most recent release of this program in the releases tab. This will be in the form of a .zip file that will need to be extracted on the computer. Once extracted, the user will need to click the .exe file for starting the data retrieval program present within the release folder. The user should then click the joint tracking program .exe file. The Intel RealSense D405 depth camera will need to be connected to the computer for the program to run. 
 
-## Joint Position data details
+## Joint Position Data Details
 The output of this program will produce 22 markers capturing the pose of the figure recorded in meters. These points are in reference to an origin point which is placed in between the hips. Each joint position will be denoted by a marker number when captured. These joint positions corroborate with the following reference model.
 
 ![image](https://github.com/Psingh238/RealSenseAngleDetection/assets/97202987/8644f00a-050b-4476-a6bc-83ceb10ef916)
