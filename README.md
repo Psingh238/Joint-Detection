@@ -25,9 +25,11 @@ Please follow the following steps to build the project from the source code. Ple
 1. Start the Python virtual environment in the Command Prompt by using the following command: ``venv\Scripts\activate``. This Command Prompt can be accessed using the integrated Command Prompt in Visual Studio.
 2. Install the Python module ``pyinstaller`` using the following command: ``pip install pyinstaller``.
 3. There will be two EXE files: the server and the joint tracking software.
-       - To compile the server.py into an EXE, run the following command: ``pyinstaller server.py``
-       - To compile the joint tracking software into an EXE, run the following command (note that the order of files matters): ``pyinstaller FigurePoseDetect.py driver.py``
-   The new EXE files will be available under the dist folder. For the joint tracking EXE to work correctly, the pose_landmarker_heavy.task file needs to be copied into the folder for the joint tracking software next to the associated EXE file.
+    - To compile the server.py into an EXE, run the following command: ``pyinstaller server.py``
+    - To compile the joint tracking software into an EXE, run the following command (note that the order of files matters): ``pyinstaller FigurePoseDetect.py driver.py``
+
+    The new EXE files will be available under the dist folder. For the joint tracking EXE to work correctly, the pose_landmarker_heavy.task file needs to be copied into the folder for the joint tracking software next to the associated EXE file.
+
 4. The new EXE files are now ready to be run.
 
 ## Setup Procedure For Directly Using EXE Files
