@@ -34,7 +34,7 @@ class DataHandler(socketserver.BaseRequestHandler):
         while not stop_flag:
             # loops until all rows are parsed for one set of data from one frame
             while rows_received < self.NUM_ROWS:
-                # Read up to 1024 bytes from the client and add into a temporary variable for later use
+                # Read up to 4096 bytes from the client and add into a temporary variable for later use
                 chunk = self.request.recv(4096)
                 
                 # break out of loop since nothing was received
