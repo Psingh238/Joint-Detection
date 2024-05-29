@@ -23,17 +23,20 @@ Please follow the following steps to build the project from the source code. Ple
 ### Compiling to EXE file
 
 1. Start the Python virtual environment in the Command Prompt by using the following command: ``venv\Scripts\activate``. This Command Prompt can be accessed using the integrated Command Prompt in Visual Studio.
-2. Install the Python module ``pyinstaller`` using the following command: ``pip install pyinstaller``.
-3. There will be two EXE files: the server and the joint tracking software.
+2. There will be two EXE files: the server and the joint tracking software.
     - To compile the server.py into an EXE, run the following command: ``pyinstaller server.py``
     - To compile the joint tracking software into an EXE, run the following command (note that the order of files matters): ``pyinstaller FigurePoseDetect.py driver.py``
 
     The new EXE files will be available under the dist folder. For the joint tracking EXE to work correctly, the pose_landmarker_heavy.task file needs to be copied into the folder for the joint tracking software next to the associated EXE file.
 
-4. The new EXE files are now ready to be run.
+3. The new EXE files are now ready to be run.
 
 ## Setup Procedure For Directly Using EXE Files
-Please download the most recent release of this program in the releases tab. This will be in the form of a .zip file that will need to be extracted on the computer. Once extracted, the user will need to click the .exe file for starting the data retrieval program present within the release folder. The user should then click the joint tracking program .exe file. The Intel RealSense D405 depth camera will need to be connected to the computer for the program to run. 
+Please download the most recent release of this program in the releases tab. This will be in the form of a .zip file that will need to be extracted on the computer. Once extracted, the user will need to click the .exe file for starting the data retrieval program present within the release folder. The user should then click the joint tracking program .exe file. The Intel RealSense D405 depth camera will need to be connected to the computer for the program to run.
+
+## Procedure For Properly Exiting Programs
+
+To exit both the server and the joint tracking software, it is necessary to first exit the joint tracking program by hitting CTRL + C. This is necessary for the joint tracking software to send the proper stop code character: the ``\0``(NULL) character. The server can then be exited by hitting CTRL + C.
 
 ## Joint Position Data Details
 The output of this program will produce 22 markers capturing the pose of the figure recorded in meters. These points are in reference to an origin point which is placed in between the hips. Each joint position will be denoted by a marker number when captured. These joint positions corroborate with the following reference model.
@@ -191,57 +194,53 @@ rows_received = 0
 stop_flag = 0
 data = b''
 full_pose = []
-        
+
 # loops and handles continuous data from the client
 while not stop_flag:
     # loops until all rows are parsed for one set of data from one frame
     while rows_received < self.NUM_ROWS:
-        # Read up to 1024 bytes from the client and add into a temporary variable for later use
-        chunk = self.request.recv(1024)
-                
+        # Read up to 4096 bytes from the client and add into a temporary variable for later use
+        chunk = self.request.recv(4096)
+        
         # break out of loop since nothing was received
         if not chunk:
             break
         data += chunk
-                
+        
         # sets the stop flag to allow handler to exit without prematurely closing the connection
         if data.count(self.STOP_CODE):
             stop_flag = 1
 
         # Process each row as it is received
         while self.MARKER in data:
-                    
+            
             # split data into a row in binary string and store the rest into the same variable
             # for further iteration
             row, data = data.split(self.MARKER, 1)
-                    
+            
             # if row was empty, then we continue looking for more rows
             if not row:
                 continue
-                    
+            
             # decode and split the row using the comma to separate all the values
             parsed_data = row.decode().split(',')
-                    
+            
             # convert from string to either integer or float depending on the type of data present
             # also append it to the list full_pose
             full_pose.append([int(num) if num.isdecimal() else float(num) for num in parsed_data])
-                    
+            
             # update the rows_received variable to be able to signal the outer loop whether we need to receive
             # another chunk of data or not
             rows_received += 1
-                    
+            
             # break out of the loop when all data is parsed and print the result for the frame to the console
             if rows_received == self.NUM_ROWS:
                 print(full_pose)
                 break
-                    
-        if rows_received == self.NUM_ROWS:
-            break
-            
+    
     # reset all variables for next batch of data
     rows_received = 0
-    data = b''
     full_pose = []
 ```
 
-The server reads up to 1024 bytes of the data it receives through the client and then it goes into a loop to parse the data until all 22 rows are correctly identified and converted into a numerical format once more which can then be displayed to the console as a list. Furthermore, the entire process is repeated until the server detects the ``\0`` character which signals the end of transmission by the client. This allows the server to keep running and allow the client to disconnect and reconnect at any time.
+The server reads up to 4096 bytes of the data it receives through the client and then it goes into a loop to parse the data until all 22 rows are correctly identified and converted into a numerical format once more which can then be displayed to the console as a list. Furthermore, the entire process is repeated until the server detects the ``\0`` character which signals the end of transmission by the client. This allows the server to keep running and allow the client to disconnect and reconnect at any time.
