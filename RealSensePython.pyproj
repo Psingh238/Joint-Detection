@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>5b502155-a68d-453f-81fb-40e6f2770e0e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>driver.py</StartupFile>
+    <StartupFile>server.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

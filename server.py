@@ -35,7 +35,7 @@ class DataHandler(socketserver.BaseRequestHandler):
             # loops until all rows are parsed for one set of data from one frame
             while rows_received < self.NUM_ROWS:
                 # Read up to 1024 bytes from the client and add into a temporary variable for later use
-                chunk = self.request.recv(1024)
+                chunk = self.request.recv(4096)
                 
                 # break out of loop since nothing was received
                 if not chunk:
@@ -72,13 +72,9 @@ class DataHandler(socketserver.BaseRequestHandler):
                     if rows_received == self.NUM_ROWS:
                         print(full_pose)
                         break
-                    
-                if rows_received == self.NUM_ROWS:
-                    break
             
             # reset all variables for next batch of data
             rows_received = 0
-            data = b''
             full_pose = []
             
         print('Stop code detected, leaving handler')
